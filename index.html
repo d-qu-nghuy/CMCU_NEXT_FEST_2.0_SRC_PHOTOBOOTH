@@ -6,17 +6,19 @@
     <title>Photobooth - CLB Sinh viên NCKH CMC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Ẩn nút xem mật khẩu mặc định của các trình duyệt */
         input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
         input[type="password"]::-webkit-reveal { display: none; }
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* Hiệu ứng mờ dần */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Hình nền lưới Cyber-Tech tĩnh (Nằm dưới cùng) */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 147, 208, 0.5); }
+
         .bg-cyber-grid {
             background-color: #031429;
             background-image: 
@@ -28,7 +30,6 @@
             background-position: 0 0, 0 0, -1px -1px, -1px -1px;
         }
 
-        /* Chất liệu Thủy tinh lỏng (Liquid Glass) */
         .glass-panel {
             background: rgba(10, 25, 47, 0.6);
             backdrop-filter: blur(24px);
@@ -48,22 +49,27 @@
             box-shadow: 0 0 15px rgba(0, 147, 208, 0.4);
         }
 
-        /* Nút Tab */
+        .glass-input::placeholder {
+            color: rgba(156, 163, 175, 0.6);
+            font-weight: 500;
+        }
+
         .tab-active { background: rgba(255, 255, 255, 0.15); color: #fff; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .tab-inactive { background: transparent; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
         .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
+
+        body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: text; -ms-user-select: text; user-select: text; }
     </style>
 </head>
-<body class="bg-cyber-grid font-sans text-gray-100 min-h-screen flex justify-center items-center py-6 px-4 relative overflow-hidden">
 
-    <!-- CANVAS CHỨA HIỆU ỨNG PLEXUS (Z-INDEX 0) NẰM SAU CÙNG -->
+<body class="bg-cyber-grid font-sans text-gray-100 h-[100dvh] w-full flex justify-center items-center p-4 relative overflow-hidden">
+
     <canvas id="plexusCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none"></canvas>
 
-    <!-- FORM THÔNG TIN (Z-INDEX 10) NỔI TRÊN NỀN -->
-    <div class="w-full max-w-md glass-panel rounded-[2rem] flex flex-col relative z-10 overflow-hidden min-h-[90vh]">
+    <div class="w-full max-w-md glass-panel rounded-[2rem] flex flex-col relative z-10 overflow-hidden h-full max-h-[850px]">
         
-        <!-- Navbar Tabs -->
-        <div class="p-3 z-10 sticky top-0">
+        <div class="p-3 z-20 sticky top-0 bg-transparent">
             <div class="flex bg-black/40 backdrop-blur-md rounded-2xl p-1 border border-white/5 shadow-inner">
                 <button id="btnTab1" onclick="switchTab('tab1')" class="flex-1 py-3 text-center tab-active rounded-xl transition-all uppercase text-xs tracking-widest">
                     Đăng ký chụp
@@ -74,12 +80,8 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 1: ĐĂNG KÝ CHỤP -->
-        <!-- ========================================== -->
-        <div id="tab1" class="flex-1 flex flex-col relative fade-in">
-            <!-- Header Logos & Title -->
-            <div class="px-6 pb-4 pt-4 text-center flex flex-col items-center">
+        <div id="tab1" class="flex-1 flex flex-col relative fade-in overflow-y-auto pb-4">
+            <div class="px-6 pb-4 pt-2 text-center flex flex-col items-center">
                 <div class="flex justify-center items-center space-x-4 mb-5 bg-white/70 backdrop-blur-xl py-2 px-6 rounded-full border border-white/50 shadow-[0_4px_15px_rgba(0,147,208,0.2)]">
                     <img src="png/huy-hieu-doan.png" alt="Đoàn Thanh Niên" class="h-9 md:h-11 object-contain hover:scale-105 transition-transform drop-shadow-sm">
                     <div class="w-px h-6 bg-gray-400/50"></div>
@@ -92,8 +94,7 @@
                 </h1>
             </div>
 
-            <!-- Khối trạng thái -->
-            <div class="bg-black/30 border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2">
+            <div class="bg-black/30 border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2 flex-shrink-0">
                 <h2 class="text-[10px] font-bold text-[#0093d0] uppercase mb-1.5 tracking-widest flex items-center">
                     <span class="w-2 h-2 rounded-full bg-[#0093d0] animate-pulse mr-2 shadow-[0_0_8px_#0093d0]"></span> LƯỢT CHỤP HIỆN TẠI
                 </h2>
@@ -107,19 +108,19 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Họ và Tên *</label>
                         <input type="text" id="fullName" required placeholder="VD: Đỗ Quang Huy" 
-                            class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold placeholder-gray-500 outline-none relative z-20">
+                            class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold outline-none relative z-20">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mã Số Sinh Viên *</label>
                         <input type="text" id="mssv" required placeholder="VD: BEC250024" 
-                            class="w-full px-4 py-3.5 rounded-xl glass-input uppercase transition-all font-bold placeholder-gray-500 outline-none relative z-20">
+                            class="w-full px-4 py-3.5 rounded-xl glass-input uppercase transition-all font-bold outline-none relative z-20">
                     </div>
                     
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mật Khẩu (6 Số) *</label>
                         <div class="relative z-20">
                             <input type="password" id="password" required placeholder="••••••" maxlength="6" minlength="6" inputmode="numeric" pattern="[0-9]*"
-                                class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-black tracking-widest text-lg pr-12 placeholder-gray-500 outline-none">
+                                class="w-full px-4 py-3.5 rounded-xl glass-input transition-all tracking-widest text-lg pr-12 outline-none font-black">
                             <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#0093d0] transition-colors flex items-center justify-center">
                                 <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
@@ -144,56 +145,69 @@
                 <button onclick="resetRegisterForm()" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold py-3 px-8 rounded-full shadow-lg active:scale-95 transition-all backdrop-blur-md">Đăng ký phiên mới</button>
             </div>
 
+            <!-- Modal Xác Nhận Kép Đã được tinh chỉnh Font Chữ -->
             <div id="confirmModal" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-4 fade-in">
                 <div class="glass-panel rounded-3xl p-6 w-full max-w-sm text-center relative overflow-hidden">
                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-30"></div>
                     <div class="w-16 h-16 bg-[#0093d0]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#0093d0]/50">
                         <svg class="w-8 h-8 text-[#0093d0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
-                    <h3 class="text-xl font-black text-white mb-2 tracking-wide">Xác thực hệ thống</h3>
-                    <p class="text-sm text-gray-300 mb-4">Danh tính: <b id="confirmName" class="text-white">...</b><br>Mã số: <b id="confirmMSSV" class="text-[#0093d0] text-lg tracking-widest font-black">...</b></p>
+                    <h3 class="text-xl font-black text-white mb-3 tracking-wide">Xác nhận hệ thống</h3>
+                    
+                    <p class="text-sm text-gray-300 mb-5 leading-loose">
+                        Họ và Tên: <b id="confirmName" class="text-white text-lg tracking-widest font-black">...</b><br>
+                        MSSV: <b id="confirmMSSV" class="text-[#0093d0] text-lg tracking-widest font-black">...</b>
+                    </p>
+                    
                     <p class="text-xs text-red-400 font-bold mb-6 italic bg-red-900/20 py-2 rounded-lg border border-red-500/20">Cảnh báo: Sai MSSV sẽ làm mất quyền truy cập ảnh!</p>
                     <div class="flex gap-3">
                         <button onclick="closeConfirmModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors border border-white/10">Sửa lại</button>
-                        <button onclick="submitRegistration()" id="btnRealSubmit" class="flex-1 bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-bold py-3 rounded-xl shadow-[0_0_15px_rgba(0,147,208,0.5)] border border-white/20 transition-all">Khởi tạo</button>
+                        <button onclick="submitRegistration()" id="btnRealSubmit" class="flex-1 bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-bold py-3 rounded-xl shadow-[0_0_15px_rgba(0,147,208,0.5)] border border-white/20 transition-all">Xác nhận</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 2: NHẬN ẢNH -->
-        <!-- ========================================== -->
-        <div id="tab2" class="flex-1 flex flex-col hidden fade-in">
+        <div id="tab2" class="flex-1 flex flex-col hidden fade-in overflow-y-hidden relative">
             
-            <div id="folderView" class="p-6 flex-1 flex flex-col">
-                <div class="mb-4 relative z-20">
+            <div id="folderView" class="p-6 flex-1 flex flex-col overflow-y-hidden">
+                <div class="mb-4 relative z-20 flex-shrink-0">
                     <h2 class="text-sm font-bold text-gray-300 mb-3 tracking-widest uppercase ml-1">Kho Dữ Liệu Ảnh</h2>
                     <div class="relative">
                         <input type="text" id="searchFolder" placeholder="Nhập MSSV/TÊN ..." 
-                            class="w-full pl-10 pr-4 py-3.5 rounded-xl glass-input transition-all uppercase font-bold placeholder-gray-500 outline-none">
+                            class="w-full pl-10 pr-4 py-3.5 rounded-xl glass-input transition-all uppercase font-bold outline-none">
                         <svg class="w-5 h-5 absolute left-3.5 top-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 overflow-y-auto pb-6 relative z-20" id="folderGrid">
+                <div class="grid grid-cols-2 gap-3 overflow-y-auto pb-6 relative z-20 flex-1 pr-1 content-start" id="folderGrid">
                     <!-- Data here -->
                 </div>
             </div>
 
+            <!-- Giao diện sau khi nhập pass thành công -->
             <div id="galleryView" class="hidden p-6 flex-1 flex flex-col bg-black/40 backdrop-blur-2xl absolute inset-0 z-30 overflow-y-auto">
                 <div class="flex justify-between items-center mb-6 sticky top-0 bg-transparent py-2">
-                    <button onclick="closeGallery()" class="text-gray-300 hover:text-white flex items-center font-bold bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Quay lại
+                    <button onclick="closeGallery()" class="text-white flex items-center font-bold bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-xl border border-white/20 backdrop-blur-md">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> THOÁT
                     </button>
-                    <h2 class="text-lg font-black tracking-widest text-[#0093d0]" id="galleryTitle">25EC123</h2>
+                    <h2 class="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#0093d0] drop-shadow-md" id="galleryTitle">25EC123</h2>
                 </div>
                 
-                <button class="w-full bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold py-3.5 rounded-xl mb-6 shadow-lg flex items-center justify-center border border-white/10 backdrop-blur-md">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    TẢI TOÀN BỘ ẢNH (.ZIP)
-                </button>
-                <div class="space-y-6 pb-8"></div>
+                <div class="flex flex-col items-center justify-center flex-1 pb-20 mt-4">
+                    <div class="relative w-32 h-32 mb-10 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-[#0093d0] rounded-full blur-2xl opacity-40 animate-pulse"></div>
+                        <div class="w-20 h-20 bg-transparent border-[3px] border-white rounded-full flex items-center justify-center relative z-10">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-12 tracking-widest uppercase text-white drop-shadow-md text-center">THƯ MỤC ĐÃ MỞ KHÓA</h3>
+                    
+                    <a href="#" id="driveLinkBtn" target="_blank" class="w-full max-w-xs bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-2xl shadow-[0_0_25px_rgba(0,147,208,0.5)] border border-white/30 flex items-center justify-center active:scale-95 transition-all text-lg">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        TRUY CẬP DRIVE
+                    </a>
+                </div>
             </div>
 
             <!-- Modal Nhập Mật Khẩu -->
@@ -204,8 +218,8 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                     
-                    <h3 class="text-xl font-black text-center mb-2 text-white tracking-wider">Mở khóa thư mục</h3>
-                    <p class="text-center text-base md:text-lg font-black tracking-widest text-[#0093d0] uppercase mb-6" id="modalTargetFolder">MSSV: ---</p>
+                    <h3 class="text-xl font-black text-center mb-1 text-white tracking-widest uppercase">MỞ KHÓA THƯ MỤC</h3>
+                    <p class="text-center text-xs font-bold tracking-widest text-[#0093d0] uppercase mb-6" id="modalTargetFolder">MSSV: ---</p>
                     
                     <div class="relative mb-3">
                         <input type="password" id="unlockPassword" placeholder="Nhập mật khẩu 6 số" maxlength="6" inputmode="numeric" pattern="[0-9]*"
@@ -223,7 +237,6 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT GIAO DIỆN & API -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbz_m-F4cTM-vvyyaUs9Yf0QNoPxpuAFZtNbUQyYEy-GsxfgngyJHb3Lf-m-OlggkC1b/exec";
         let currentTargetFolder = "";
@@ -322,7 +335,11 @@
                 if (result.status === 'success') {
                     document.getElementById('successScreen').classList.remove('hidden');
                 } else {
-                    msg.textContent = result.message;
+                    if(result.message.includes('đã tồn tại') || result.message.includes('đã đăng ký')) {
+                        msg.textContent = "Mã số sinh viên này đã đăng ký. Để chụp bổ sung, vui lòng liên hệ Admin tại quầy!";
+                    } else {
+                        msg.textContent = result.message;
+                    }
                     msg.classList.remove('hidden');
                 }
             } catch (error) {
@@ -332,7 +349,7 @@
             }
 
             btn.disabled = false;
-            btn.innerHTML = `Khởi tạo`;
+            btn.innerHTML = `Xác nhận`;
         }
 
         function resetRegisterForm() {
@@ -363,13 +380,13 @@
                 const iconColor = isVip ? "text-purple-400" : "text-[#0093d0]";
 
                 const nameHtml = (isVip || name === 'Khách VIP') ? 
-                    `<div class="mt-1 h-3"></div>` : 
-                    `<span class="text-[9px] text-gray-400 font-medium truncate w-full text-center px-2 mt-1 uppercase tracking-widest" title="${name}">${name}</span>`;
+                    `<div class="mt-1 h-[15px]"></div>` : 
+                    `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-2 mt-1 uppercase tracking-widest" title="${name}">${name}</span>`;
 
                 grid.innerHTML += `
-                    <div onclick="openPasswordModal('${mssv}', ${isVip})" class="bg-white/5 hover:bg-white/10 p-4 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition-all cursor-pointer backdrop-blur-sm hover:shadow-[0_0_15px_rgba(0,147,208,0.2)] group">
-                        <svg class="w-12 h-12 ${iconColor} mb-2 group-hover:scale-110 transition-transform drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
-                        <span class="font-black text-white tracking-wider truncate w-full text-center px-1">${mssv}</span>
+                    <div onclick="openPasswordModal('${mssv}', ${isVip})" class="bg-white/5 hover:bg-white/10 py-5 px-2 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition-all cursor-pointer backdrop-blur-sm hover:shadow-[0_0_15px_rgba(0,147,208,0.2)] group">
+                        <svg class="w-10 h-10 ${iconColor} mb-2 group-hover:scale-110 transition-transform drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                        <span class="font-black text-white text-sm tracking-wider truncate w-full text-center px-1">${mssv}</span>
                         ${nameHtml}
                     </div>
                 `;
@@ -377,7 +394,7 @@
         }
 
         document.getElementById('searchFolder').addEventListener('input', function(e) {
-            const keyword = e.target.value.toUpperCase();
+            const keyword = e.target.value.trim().toUpperCase();
             const filtered = completedList.filter(item => 
                 item.mssv.toUpperCase().includes(keyword) || 
                 (item.name && item.name.toUpperCase().includes(keyword))
@@ -435,27 +452,7 @@
                 if (result.status === 'success') {
                     closePasswordModal();
                     document.getElementById('galleryTitle').textContent = currentTargetFolder;
-                    document.getElementById('galleryView').innerHTML = `
-                        <div class="flex justify-between items-center mb-6 sticky top-0 bg-transparent py-4 z-10">
-                            <button onclick="closeGallery()" class="text-white flex items-center font-bold bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-xl border border-white/20 backdrop-blur-md">
-                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> THOÁT
-                            </button>
-                            <h2 class="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-[#0093d0] drop-shadow-md">${currentTargetFolder}</h2>
-                        </div>
-                        <div class="flex flex-col items-center justify-center flex-1 pb-20 mt-10">
-                            <div class="relative w-32 h-32 mb-8 flex items-center justify-center">
-                                <div class="absolute inset-0 bg-[#0093d0] rounded-full blur-2xl opacity-40 animate-pulse"></div>
-                                <svg class="w-20 h-20 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <h3 class="text-3xl font-black mb-3 tracking-widest uppercase">Đã Giải Mã</h3>
-                            <p class="text-gray-300 text-center mb-10 px-6 font-medium">Kho ảnh nguyên bản (RAW/HD) đã được cấp phép truy cập trên máy chủ đám mây.</p>
-                            
-                            <a href="${result.folderUrl}" target="_blank" class="w-full max-w-xs bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-2xl shadow-[0_0_25px_rgba(0,147,208,0.5)] border border-white/30 flex items-center justify-center active:scale-95 transition-all text-lg">
-                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                TRUY CẬP DRIVE
-                            </a>
-                        </div>
-                    `;
+                    document.getElementById('driveLinkBtn').href = result.folderUrl;
                     document.getElementById('galleryView').classList.remove('hidden');
 
                 } else if (result.status === 'pending') {
@@ -507,7 +504,7 @@
                     const newData = response.completed.reverse();
                     if(JSON.stringify(completedList) !== JSON.stringify(newData)) {
                         completedList = newData;
-                        const keyword = document.getElementById('searchFolder').value.toUpperCase();
+                        const keyword = document.getElementById('searchFolder').value.trim().toUpperCase();
                         
                         if (keyword) {
                             renderFolders(completedList.filter(item => 
@@ -535,11 +532,7 @@
         let width, height;
         let particles = [];
         
-        // Tinh chỉnh cấu hình mật độ mạng lưới
-        // Tăng số lượng hạt lên đáng kể để tạo độ dày đặc (Mobile: 65, PC: 140)
         const particleCount = window.innerWidth < 768 ? 65 : 140; 
-        
-        // Giảm khoảng cách nối một chút để các đường nối tạo thành cụm, không bị chéo vắt ngang màn hình gây rối mắt
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -633,7 +626,6 @@
 
                     if (distance < connectionDistance) {
                         ctx.beginPath();
-                        // Giảm độ trong suốt của đường kẻ (nhân với 0.7) để mạng lưới dày hạt nhưng không bị bết màu
                         ctx.strokeStyle = `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`; 
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
