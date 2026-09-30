@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Photobooth - CLB Sinh viên NCKH CMC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ẩn nút xem mật khẩu mặc định của trình duyệt */
+        input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
+        input[type="password"]::-webkit-reveal { display: none; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .tab-active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: bold; }
+        .tab-inactive { border-bottom: 4px solid transparent; color: #6b7280; font-weight: 500; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex justify-center">
+
+    <div class="w-full max-w-md bg-white shadow-xl min-h-screen flex flex-col relative overflow-hidden">
+        
+        <!-- Navbar Tabs -->
+        <div class="flex bg-white shadow-sm z-10 sticky top-0">
+            <button id="btnTab1" onclick="switchTab('tab1')" class="flex-1 py-4 text-center tab-active transition-colors uppercase text-sm tracking-wide">
+                Đăng ký chụp
+            </button>
+            <button id="btnTab2" onclick="switchTab('tab2')" class="flex-1 py-4 text-center tab-inactive transition-colors uppercase text-sm tracking-wide">
+                Nhận ảnh
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: ĐĂNG KÝ CHỤP -->
+        <!-- ========================================== -->
+        <div id="tab1" class="flex-1 flex flex-col relative fade-in">
+            <!-- Header Logos & Title -->
+            <div class="bg-blue-600 text-white p-6 text-center rounded-b-3xl shadow-md">
+                <div class="flex justify-center items-center space-x-3 mb-3 text-xs font-bold opacity-90">
+                    <span>[LOGO CMC]</span> <span>[ĐOÀN TN]</span> <span>[CLB NCKH]</span>
+                </div>
+                <h1 class="text-2xl font-black tracking-wider uppercase">Đăng ký chụp<br>Photobooth</h1>
+            </div>
+
+            <!-- Khối trạng thái (Chỉ hiện ở Tab Đăng ký) -->
+            <div class="bg-blue-50 border-b border-blue-100 shadow-sm flex flex-col justify-center items-center py-3">
+                <h2 class="text-[10px] font-bold text-blue-500 uppercase mb-1.5 tracking-wider flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-1.5"></span> LƯỢT CHỤP HIỆN TẠI
+                </h2>
+                <div id="studentActiveContainer" class="flex flex-col items-center justify-center w-full">
+                    <span class="text-gray-400 italic font-medium text-xs tracking-normal">Trống - Sẵn sàng đón khách</span>
+                </div>
+            </div>
+
+            <div class="p-6 flex-1">
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Họ và Tên *</label>
+                        <input type="text" id="fullName" required placeholder="VD: Đỗ Quang Huy" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:ring-0 focus:border-blue-500 transition-colors font-bold text-gray-800">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Mã Số Sinh Viên *</label>
+                        <input type="text" id="mssv" required placeholder="VD: BEC250024" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:ring-0 focus:border-blue-500 uppercase transition-colors font-bold text-gray-800">
+                    </div>
+                    
+                    <div class="relative">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Mật Khẩu (6 Số) *</label>
+                        <input type="password" id="password" required placeholder="••••••" maxlength="6" minlength="6" inputmode="numeric" pattern="[0-9]*"
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:ring-0 focus:border-blue-500 transition-colors font-black tracking-widest text-lg pr-12">
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-9 p-2 text-gray-400 hover:text-blue-600">
+                            <svg id="eyeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="showConfirmModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all mt-4 flex justify-center items-center">
+                        <span id="btnText">XÁC NHẬN ĐĂNG KÝ</span>
+                    </button>
+                </form>
+                <div id="regMessage" class="mt-4 text-center text-sm font-bold hidden p-3 rounded-lg text-red-600"></div>
+            </div>
+
+            <!-- Màn hình Thành công (Phủ lên Tab 1) -->
+            <div id="successScreen" class="hidden absolute inset-0 bg-green-500 z-20 flex flex-col justify-center items-center p-6 text-center text-white fade-in">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-xl">
+                    <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-3xl font-black mb-4">Đăng ký thành công!</h2>
+                <p class="text-lg font-medium opacity-90 leading-relaxed mb-8">Bạn vui lòng chuẩn bị vào quầy chụp. Sau khi chụp xong, hãy chuyển sang tab <br><b class="text-yellow-300">NHẬN ẢNH</b> nhé!</p>
+                <button onclick="resetRegisterForm()" class="bg-white text-green-600 font-bold py-3 px-8 rounded-full shadow-lg active:scale-95 transition-transform">Đăng ký người tiếp theo</button>
+            </div>
+
+            <!-- Modal Xác Nhận Kép -->
+            <div id="confirmModal" class="hidden absolute inset-0 bg-black bg-opacity-70 z-30 flex items-center justify-center p-4 fade-in">
+                <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-800 mb-2">Xác nhận thông tin</h3>
+                    <p class="text-sm text-gray-600 mb-4">Bạn là <b id="confirmName" class="text-blue-600">...</b>,<br>MSSV <b id="confirmMSSV" class="text-blue-600 text-lg">...</b></p>
+                    <p class="text-xs text-red-500 font-bold mb-6 italic">Hãy kiểm tra kỹ, nếu sai MSSV bạn sẽ không thể lấy được ảnh!</p>
+                    <div class="flex gap-3">
+                        <button onclick="closeConfirmModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition-colors">Sửa lại</button>
+                        <button onclick="submitRegistration()" id="btnRealSubmit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition-colors">Chắc chắn</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: NHẬN ẢNH -->
+        <!-- ========================================== -->
+        <div id="tab2" class="flex-1 flex flex-col bg-gray-50 hidden fade-in">
+            
+            <!-- GIAI ĐOẠN 1: TÌM THƯ MỤC -->
+            <div id="folderView" class="p-4 flex-1 flex flex-col">
+                <div class="mb-4">
+                    <h2 class="text-xl font-black text-gray-800 mb-2">Kho ảnh sự kiện</h2>
+                    <div class="relative">
+                        <input type="text" id="searchFolder" placeholder="Nhập MSSV của bạn để tìm..." 
+                            class="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 transition-colors uppercase font-bold text-gray-700 shadow-sm">
+                        <svg class="w-5 h-5 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <!-- Lưới Thư mục -->
+                <div class="grid grid-cols-2 gap-3 overflow-y-auto pb-6" id="folderGrid">
+                    <!-- Để trống khu vực này lúc tải trang -->
+                </div>
+            </div>
+
+            <!-- GIAI ĐOẠN 2: THƯ VIỆN ẢNH (Bị ẩn ban đầu) -->
+            <div id="galleryView" class="hidden p-4 flex-1 flex flex-col bg-gray-900 text-white absolute inset-0 z-20 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 sticky top-0 bg-gray-900 py-2">
+                    <button onclick="closeGallery()" class="text-gray-300 hover:text-white flex items-center">
+                        <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Quay lại
+                    </button>
+                    <h2 class="text-lg font-bold" id="galleryTitle">25EC123</h2>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mb-4 shadow-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    TẢI TOÀN BỘ ẢNH (.ZIP)
+                </button>
+
+                <!-- Lưới Thumbnail 1 Cột -->
+                <div class="space-y-6 pb-8">
+                    <!-- Ảnh 1 -->
+                    <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700">
+                        <img src="https://via.placeholder.com/800x1200/374151/FFFFFF?text=Thumbnail+Load+Sieu+Toc" class="w-full h-auto object-cover" alt="Thumb">
+                        <div class="p-3">
+                            <button class="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-lg flex justify-center items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Tải ảnh gốc HD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Nhập Mật Khẩu (Phủ lên Tab 2) -->
+            <div id="passwordModal" onclick="closePasswordModal()" class="hidden absolute inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center p-4 fade-in cursor-pointer">
+                <div onclick="event.stopPropagation()" class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative cursor-default">
+                    <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <h3 class="text-xl font-bold text-center mb-4 text-gray-800">Mở khóa thư mục</h3>
+                    <p class="text-center text-sm text-gray-500 mb-4" id="modalTargetFolder">MSSV: ---</p>
+                    <div class="relative mb-2">
+                        <input type="password" id="unlockPassword" placeholder="Nhập 6 số bảo mật" maxlength="6" inputmode="numeric" pattern="[0-9]*"
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 font-black tracking-widest text-center text-lg pr-12">
+                        <button type="button" onclick="toggleUnlockPassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-blue-600">
+                            <svg id="unlockEyeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </button>
+                    </div>
+                    <p id="modalError" class="text-red-500 text-xs font-bold text-center h-4 mb-3"></p>
+                    <button onclick="verifyPassword()" id="btnUnlock" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">MỞ KHÓA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbz_m-F4cTM-vvyyaUs9Yf0QNoPxpuAFZtNbUQyYEy-GsxfgngyJHb3Lf-m-OlggkC1b/exec";
+        let currentTargetFolder = "";
+        let completedList = []; 
+
+        // ==========================================
+        // CHUNG: CHUYỂN TAB VÀ ẨN/HIỆN MẬT KHẨU
+        // ==========================================
+        function switchTab(tabId) {
+            // Lưu trạng thái tab hiện tại vào bộ nhớ trình duyệt
+            localStorage.setItem('student_current_tab', tabId);
+
+            document.getElementById('tab1').classList.add('hidden');
+            document.getElementById('tab2').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.getElementById('btnTab1').className = tabId === 'tab1' ? "flex-1 py-4 text-center tab-active transition-colors uppercase text-sm tracking-wide" : "flex-1 py-4 text-center tab-inactive transition-colors uppercase text-sm tracking-wide";
+            document.getElementById('btnTab2').className = tabId === 'tab2' ? "flex-1 py-4 text-center tab-active transition-colors uppercase text-sm tracking-wide" : "flex-1 py-4 text-center tab-inactive transition-colors uppercase text-sm tracking-wide";
+        }
+
+        // Tự động khôi phục đúng Tab trước đó khi vừa mở hoặc reload lại web
+        const initialStudentTab = localStorage.getItem('student_current_tab') || 'tab1';
+        switchTab(initialStudentTab);
+
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+            } else {
+                pwd.type = 'password';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            }
+        }
+
+        function toggleUnlockPassword() {
+            const pwd = document.getElementById('unlockPassword');
+            const eyeIcon = document.getElementById('unlockEyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+            } else {
+                pwd.type = 'password';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            }
+        }
+
+        // ==========================================
+        // TAB 1: XỬ LÝ ĐĂNG KÝ CHỤP (CÓ VALIDATION MSSV KHẮT KHE)
+        // ==========================================
+        function showConfirmModal() {
+            const name = document.getElementById('fullName').value.trim();
+            const mssv = document.getElementById('mssv').value.trim().toUpperCase();
+            const password = document.getElementById('password').value.trim();
+            const msg = document.getElementById('regMessage');
+
+            if (!name || !mssv || password.length !== 6) {
+                msg.textContent = "Vui lòng nhập đầy đủ Họ tên, MSSV và đúng 6 số mật khẩu!";
+                msg.classList.remove('hidden');
+                return;
+            }
+
+            // KIỂM TRA ĐỊNH DẠNG MSSV (3 Chữ cái chuẩn + 6 Số)
+            const allowedPrefixes = ["BIT", "BNS", "BCS", "BAI", "BSE", "BEC", "BBA", "BIB", "BLS", "BMK", "BEM", "BMC", "BPR", "BGD", "BGA", "BDA", "BCL", "BCB", "BKL"];
+            const prefix = mssv.substring(0, 3);
+            const suffix = mssv.substring(3);
+            
+            const isValidPrefix = allowedPrefixes.includes(prefix);
+            const isValidSuffix = /^\d{6}$/.test(suffix);
+
+            if (mssv.length !== 9 || !isValidPrefix || !isValidSuffix) {
+                msg.textContent = "MSSV không hợp lệ! Vui lòng nhập đúng 3 mã ngành (VD: BEC) và 6 chữ số.";
+                msg.classList.remove('hidden');
+                return;
+            }
+
+            msg.classList.add('hidden');
+            document.getElementById('confirmName').textContent = name;
+            document.getElementById('confirmMSSV').textContent = mssv;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        async function submitRegistration() {
+            const name = document.getElementById('fullName').value.trim();
+            const mssv = document.getElementById('mssv').value.trim().toUpperCase();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('btnRealSubmit');
+            const msg = document.getElementById('regMessage');
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'register', mssv: mssv, password: password, name: name })
+                });
+                const result = await response.json();
+                
+                closeConfirmModal();
+                if (result.status === 'success') {
+                    document.getElementById('successScreen').classList.remove('hidden');
+                } else {
+                    msg.textContent = result.message;
+                    msg.classList.remove('hidden');
+                }
+            } catch (error) {
+                closeConfirmModal();
+                msg.textContent = "Lỗi kết nối mạng, vui lòng thử lại!";
+                msg.classList.remove('hidden');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = `Chắc chắn`;
+        }
+
+        function resetRegisterForm() {
+            document.getElementById('successScreen').classList.add('hidden');
+            document.getElementById('fullName').value = '';
+            document.getElementById('mssv').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // ==========================================
+        // TAB 2: VẼ GIAO DIỆN & TÌM KIẾM THƯ MỤC
+        // ==========================================
+        function renderFolders(list) {
+            const grid = document.getElementById('folderGrid');
+            grid.innerHTML = '';
+            
+            if(list.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-center text-gray-400 py-8 font-semibold">Kho ảnh sự kiện đang trống. Trải nghiệm chụp ngay để nhận ảnh tại đây!</div>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const mssv = item.mssv;
+                const name = item.name;
+                
+                // Xác định khách VIP: Nếu mã không đúng định dạng 3 Chữ + 6 Số của sinh viên
+                const isVip = !/^[A-Z]{3}\d{6}$/i.test(mssv);
+
+                // Nếu là VIP, ẩn phần sub-name. Nếu là sinh viên, hiện tên.
+                const nameHtml = (isVip || name === 'Khách VIP') ? 
+                    `<div class="mt-1 h-3"></div>` : 
+                    `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-2 mt-1" title="${name}">${name}</span>`;
+
+                grid.innerHTML += `
+                    <div onclick="openPasswordModal('${mssv}', ${isVip})" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center active:scale-95 transition-transform cursor-pointer hover:shadow-md">
+                        <svg class="w-14 h-14 text-blue-500 mb-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                        <span class="font-bold text-gray-700 tracking-wide truncate w-full text-center px-1">${mssv}</span>
+                        ${nameHtml}
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('searchFolder').addEventListener('input', function(e) {
+            const keyword = e.target.value.toUpperCase();
+            const filtered = completedList.filter(item => 
+                item.mssv.toUpperCase().includes(keyword) || 
+                (item.name && item.name.toUpperCase().includes(keyword))
+            );
+            renderFolders(filtered);
+        });
+
+        // ==========================================
+        // TAB 2: XÁC THỰC MẬT KHẨU & MỞ THƯ MỤC
+        // ==========================================
+        function openPasswordModal(folderMssv, isVip) {
+            currentTargetFolder = folderMssv;
+            
+            // Xử lý đổi chữ cho khách VIP
+            if (typeof isVip !== 'boolean') isVip = !/^[A-Z]{3}\d{6}$/i.test(folderMssv);
+            document.getElementById('modalTargetFolder').textContent = isVip ? `Thư mục: ${folderMssv}` : `MSSV: ${folderMssv}`;
+            
+            // Cập nhật Placeholder thành: "Nhập mật khẩu 6 số"
+            document.getElementById('unlockPassword').placeholder = "Nhập mật khẩu 6 số";
+            
+            document.getElementById('modalError').textContent = '';
+            document.getElementById('unlockPassword').value = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        let unlockTimeout = null; // Biến lưu bộ đếm thời gian tự động quét
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            if (unlockTimeout) clearTimeout(unlockTimeout); // Hủy vòng lặp quét nếu người dùng bấm X đóng bảng
+        }
+
+        async function verifyPassword() {
+            const pwd = document.getElementById('unlockPassword').value;
+            const errorTxt = document.getElementById('modalError');
+            const btn = document.getElementById('btnUnlock');
+            
+            // 1. Dọn sạch thông báo lỗi cũ ngay khi vừa bấm nút để tránh hiểu nhầm
+            errorTxt.textContent = "";
+            errorTxt.className = "text-xs font-bold text-center h-4 mb-3";
+
+            if(pwd.length !== 6) {
+                errorTxt.textContent = "Vui lòng nhập đủ 6 số!";
+                errorTxt.className = "text-red-500 text-xs font-bold text-center h-4 mb-3";
+                return;
+            }
+            
+            // Khóa nút bấm và hiện hiệu ứng xoay loading
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'unlock_folder', mssv: currentTargetFolder, password: pwd })
+                });
+                const result = await response.json();
+
+                // Ngăn mã chạy tiếp nếu bảng nhập pass đã bị người dùng bấm X đóng lại
+                if (document.getElementById('passwordModal').classList.contains('hidden')) return;
+
+                if (result.status === 'success') {
+                    // Thành công -> Mở giao diện tải ảnh
+                    closePasswordModal();
+                    document.getElementById('galleryTitle').textContent = currentTargetFolder;
+                    document.getElementById('galleryView').innerHTML = `
+                        <div class="flex justify-between items-center mb-6 sticky top-0 bg-gray-900 py-4 z-10 shadow-md">
+                            <button onclick="closeGallery()" class="text-gray-300 hover:text-white flex items-center font-semibold">
+                                <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Quay lại
+                            </button>
+                            <h2 class="text-xl font-black tracking-widest">${currentTargetFolder}</h2>
+                        </div>
+                        <div class="flex flex-col items-center justify-center flex-1 pb-20">
+                            <svg class="w-24 h-24 text-green-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <h3 class="text-2xl font-bold mb-2">Thư mục đã mở khóa!</h3>
+                            <p class="text-gray-400 text-center mb-8 px-4">Kho ảnh chất lượng cao (HD) của bạn đã sẵn sàng trên nền tảng Google Drive của CLB.</p>
+                            <a href="${result.folderUrl}" target="_blank" class="w-full max-w-xs bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.5)] flex items-center justify-center active:scale-95 transition-all text-lg">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                XEM & TẢI ẢNH GỐC
+                            </a>
+                        </div>
+                    `;
+                    document.getElementById('galleryView').classList.remove('hidden');
+
+                } else if (result.status === 'pending') {
+                    // TÍNH NĂNG MỚI: TỰ ĐỘNG THỬ LẠI
+                    errorTxt.textContent = "Đang chờ Google Drive đồng bộ ảnh... Vui lòng giữ máy!";
+                    errorTxt.className = "text-yellow-500 text-xs font-bold text-center h-4 mb-3 animate-pulse";
+                    
+                    // Gọi lại chính hàm này sau 2.5 giây
+                    unlockTimeout = setTimeout(verifyPassword, 2500); 
+                    return; 
+
+                } else {
+                    errorTxt.textContent = result.message; 
+                    errorTxt.className = "text-red-500 text-xs font-bold text-center h-4 mb-3";
+                }
+            } catch (error) {
+                errorTxt.textContent = "Lỗi mạng, không thể xác thực.";
+                errorTxt.className = "text-red-500 text-xs font-bold text-center h-4 mb-3";
+            }
+
+            // Nếu mật khẩu sai hoặc lỗi mạng, mới nhả nút bấm ra cho phép nhập lại
+            btn.innerHTML = "MỞ KHÓA";
+            btn.disabled = false;
+        }
+
+        function closeGallery() {
+            document.getElementById('galleryView').classList.add('hidden');
+        }
+
+        // ==========================================
+        // ĐỒNG BỘ DỮ LIỆU NGẦM TỰ ĐỘNG (BẢN SIÊU TỐC)
+        // ==========================================
+        let isSyncing = false;
+
+        async function syncPublicData() {
+            if (isSyncing) return;
+            isSyncing = true;
+            
+            try {
+                // Chỉ gọi 1 Request duy nhất lấy CẢ người đang chụp LẪN danh sách thư mục
+                const response = await fetch(API_URL + "?action=sync_student").then(r => r.json());
+                
+                if (response.status === 'success') {
+                    // --- XỬ LÝ KHỐI: NGƯỜI ĐANG CHỤP ---
+                    const activeContainer = document.getElementById('studentActiveContainer');
+                    if (response.active) {
+                        const studentName = response.active.name;
+                        const isVip = !/^[A-Za-z]{3}\d{6}$/.test(response.active.mssv);
+
+                        if (isVip) {
+                            activeContainer.innerHTML = `<span class="text-sm font-black text-blue-800 uppercase tracking-wider truncate w-full text-center px-4 mt-1">${response.active.mssv}</span>`;
+                        } else {
+                            activeContainer.innerHTML = `
+                                <span class="text-sm font-black text-blue-800 uppercase tracking-wider truncate w-full text-center px-4">${studentName}</span>
+                                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">${response.active.mssv}</span>
+                            `;
+                        }
+                    } else {
+                        activeContainer.innerHTML = '<span class="text-gray-400 italic font-medium text-xs tracking-normal">Trống - Sẵn sàng đón khách</span>';
+                    }
+
+                    // --- XỬ LÝ KHỐI: THƯ MỤC NHẬN ẢNH ---
+                    const newData = response.completed.reverse();
+                    if(JSON.stringify(completedList) !== JSON.stringify(newData)) {
+                        completedList = newData;
+                        const keyword = document.getElementById('searchFolder').value.toUpperCase();
+                        
+                        if (keyword) {
+                            renderFolders(completedList.filter(item => 
+                                String(item.mssv).toUpperCase().includes(keyword) || 
+                                (item.name && String(item.name).toUpperCase().includes(keyword))
+                            ));
+                        } else {
+                            renderFolders(completedList);
+                        }
+                    }
+                }
+            } catch (error) {
+                // Im lặng bỏ qua nếu rớt mạng chớp nhoáng
+            }
+            
+            isSyncing = false;
+        }
+
+        syncPublicData(); // Chạy mồi lần đầu khi vừa mở trang
+        setInterval(syncPublicData, 4000); // Quét lại 4 giây/lần
+
+    </script>
+</body>
+</html>
