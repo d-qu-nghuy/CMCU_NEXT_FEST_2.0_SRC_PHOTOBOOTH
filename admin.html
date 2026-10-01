@@ -16,12 +16,19 @@
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 pb-24">
 
-    <!-- MENU NỔI (DÙNG CHUNG CHO CHUỘT PHẢI & NÚT 3 CHẤM) -->
+    <!-- MENU NỔI CHO TAB 2: LỊCH SỬ THƯ MỤC -->
     <div id="batchContextMenu" class="hidden fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[100] overflow-hidden">
         <button id="ctxMenuDrive" onclick="batchOpenDrive()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">🔗 Mở thư mục Drive</button>
         <button id="ctxMenuEdit" onclick="batchEditMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
         <button id="ctxMenuView" onclick="batchViewPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">👁️ Xem Mật khẩu</button>
         <button id="ctxMenuDelete" onclick="batchDelete()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Xóa thư mục</button>
+    </div>
+
+    <!-- MENU NỔI CHO TAB 1: HÀNG ĐỢI -->
+    <div id="waitBatchContextMenu" class="hidden fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[100] overflow-hidden">
+        <button id="ctxWaitMenuEdit" onclick="batchEditWaitMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
+        <button id="ctxWaitMenuView" onclick="batchViewWaitPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">👁️ Xem Mật khẩu</button>
+        <button id="ctxWaitMenuDelete" onclick="batchDeleteWait()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Hủy đăng ký</button>
     </div>
 
     <div class="max-w-md mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden flex flex-col">
@@ -56,13 +63,13 @@
                     <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 
-                <!-- SỬA LỖI UI: Dropdown Thêm Nhanh (Sinh viên / Khách VIP) -->
-                <div class="relative group">
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white h-full px-4 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center justify-center">
+                <!-- Dropdown Thêm Nhanh (Click thay vì Hover) -->
+                <div class="relative">
+                    <button id="btnQuickAdd" onclick="toggleQuickAddDropdown(event)" class="bg-purple-600 hover:bg-purple-700 text-white h-full px-4 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center justify-center">
                         + THÊM NHANH
                     </button>
-                    <!-- Khối thả xuống ẩn đi, chỉ hiện khi hover -->
-                    <div class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-2xl border border-gray-200 hidden group-hover:block z-50 overflow-hidden">
+                    <!-- Khối thả xuống -->
+                    <div id="quickAddDropdown" class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-2xl border border-gray-200 hidden z-50 overflow-hidden">
                         <button onclick="openQuickAddModal('student')" class="w-full text-left px-4 py-3 text-xs font-bold text-blue-600 hover:bg-blue-50 border-b border-gray-100 flex items-center">
                             <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> + Sinh viên
                         </button>
@@ -90,7 +97,6 @@
         <div onclick="event.stopPropagation()" class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative cursor-default">
             <button onclick="closeQuickAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             
-            <!-- Tiêu đề động -->
             <h3 id="quickAddTitle" class="text-xl font-black text-purple-700 mb-1 flex items-center">Đăng ký thủ công</h3>
             <p id="quickAddDesc" class="text-xs text-gray-500 mb-4">Tạo nhanh thư mục và cấp mã bỏ qua bước điền form.</p>
             
@@ -102,11 +108,16 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Mật khẩu (6 số)</label>
                     <div class="relative">
-                        <input type="password" id="quickAddPassword" required placeholder="••••••" maxlength="6" inputmode="numeric" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-black tracking-widest text-center text-lg pr-12">
-                        <button type="button" onclick="toggleQuickAddPassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-purple-600"><svg id="quickAddEyeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
+                        <!-- Ô nhập mật khẩu Modal Thêm Nhanh -->
+                        <input type="password" id="quickAddPassword" required placeholder="••••••" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-black tracking-widest text-center text-lg pr-12 outline-none">
+                        <button type="button" onclick="toggleQuickAddPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-purple-600 transition-colors flex items-center justify-center">
+                            <svg id="quickAddEyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
-                <!-- Cờ ẩn để biết đang tạo Sinh Viên hay VIP -->
                 <input type="hidden" id="quickAddTypeVal" value="vip">
 
                 <button type="submit" id="btnQuickAddSubmit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2">TẠO NHANH & XẾP HÀNG</button>
@@ -126,11 +137,17 @@
         
         let waitingData = [];
         let completedData = [];
-        let openMenuMssv = null; 
         let isFirstLoad = true;
+        
+        // BỘ NHỚ LƯU TRỮ VÙNG CHỌN TAB 2
         let selectedItems = new Set(); 
         let lastSelectedMssv = null; 
         let currentRenderedList = []; 
+
+        // BỘ NHỚ LƯU TRỮ VÙNG CHỌN TAB 1 (HÀNG ĐỢI)
+        let selectedWaitItems = new Set();
+        let lastSelectedWaitMssv = null;
+        let currentWaitRenderedList = [];
 
         function switchTab(tabId) {
             localStorage.setItem('admin_current_tab', tabId);
@@ -156,8 +173,7 @@
                     
                     if (isFirstLoad || JSON.stringify(waitingData) !== JSON.stringify(newWaiting)) {
                         waitingData = newWaiting;
-                        const keyword = document.getElementById('searchWaiting').value.toUpperCase();
-                        renderWaitingUI(waitingData.filter(item => item.status === 'Active' || item.mssv.toUpperCase().includes(keyword) || (item.name && item.name.toUpperCase().includes(keyword))));
+                        refreshWaitingUIAfterSelection();
                     }
 
                     if (isFirstLoad || JSON.stringify(completedData) !== JSON.stringify(newCompleted)) {
@@ -180,6 +196,9 @@
             } catch (error) { alert("Lỗi mạng khi cập nhật!"); }
         }
 
+        // ==========================================
+        // VẼ & CHỌN VÙNG HÀNG ĐỢI (ĐA CHỌN)
+        // ==========================================
         function renderWaitingUI(data) {
             const activeContainer = document.getElementById('activeStudentContainer');
             const waitingContainer = document.getElementById('waitingListContainer');
@@ -188,6 +207,9 @@
             waitingContainer.innerHTML = '';
             let hasWaiting = false;
 
+            // Lọc ra các sinh viên Waiting để phục vụ Multi-select (Không tính Active)
+            currentWaitRenderedList = data.filter(item => item.status === 'Waiting').map(item => item.mssv);
+
             data.forEach(student => {
                 if (student.status === 'Active') {
                     activeContainer.innerHTML = `
@@ -195,30 +217,27 @@
                             <p class="text-xl font-black text-blue-700 tracking-wider truncate">${student.name}</p>
                             <p class="text-sm font-bold text-gray-700 tracking-wider truncate">${student.mssv}</p>
                         </div>
-                        <button onclick="updateStatus('${student.mssv}', 'Completed')" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-lg shadow-md active:scale-95 transition-transform ml-3">HOÀN THÀNH</button>
+                        <button onclick="updateStatus('${student.mssv}', 'Completed')" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-lg shadow-md active:scale-95 transition-transform ml-3 relative z-20">HOÀN THÀNH</button>
                     `;
                 } else if (student.status === 'Waiting') {
                     hasWaiting = true;
                     const isVip = !/^[A-Za-z]{3}\d{6}$/.test(student.mssv); 
                     const badge = isVip ? `<span class="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-black uppercase ml-2">VIP</span>` : '';
                     
-                    const menuClass = (openMenuMssv === 'wait-' + student.mssv) ? "" : "hidden";
+                    const isSelected = selectedWaitItems.has(student.mssv);
+                    const cardBg = isSelected ? 'bg-blue-50 border-blue-400 shadow-md ring-1 ring-blue-400' : 'bg-white border-gray-100 shadow-sm hover:bg-gray-50';
 
                     waitingContainer.innerHTML += `
-                        <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-2 group">
+                        <div onclick="handleWaitCardClick(event, '${student.mssv}')" oncontextmenu="handleWaitContextMenu(event, '${student.mssv}')" class="flex justify-between items-center ${cardBg} p-3 rounded-xl gap-2 cursor-pointer select-none transition-colors">
                             <div class="flex-1 overflow-hidden pr-2">
                                 <p class="text-sm font-bold text-gray-800 truncate">${student.name} ${badge}</p>
                                 <p class="text-xs font-bold text-blue-600 truncate">${student.mssv} <span class="text-gray-400 font-normal ml-1">| Pass: ${student.password}</span></p>
                             </div>
-                            <button onclick="updateStatus('${student.mssv}', 'Active')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm active:scale-95 transition-transform text-sm whitespace-nowrap">VÀO CHỤP</button>
-                            <div class="relative group-menu flex-shrink-0">
-                                <button onclick="toggleMenuWait(event, 'wait-${student.mssv}')" class="text-gray-400 hover:text-gray-800 transition-colors p-2 rounded-md hover:bg-gray-100 bg-white border border-transparent hover:border-gray-200">
+                            <button onclick="event.stopPropagation(); updateStatus('${student.mssv}', 'Active')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm active:scale-95 transition-transform text-sm whitespace-nowrap relative z-20">VÀO CHỤP</button>
+                            <div class="relative flex-shrink-0 z-20">
+                                <button onclick="openWaitThreeDotMenu(event, '${student.mssv}')" class="text-gray-400 hover:text-gray-800 transition-colors p-2 rounded-md hover:bg-gray-200 shadow-sm border border-transparent">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
                                 </button>
-                                <div id="menu-wait-${student.mssv}" class="dropdown-menu-wait ${menuClass} absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                                    <button onclick="editMSSV_Wait('${student.mssv}')" class="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
-                                    <button onclick="deleteRecordWait('${student.mssv}')" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Hủy đăng ký</button>
-                                </div>
                             </div>
                         </div>
                     `;
@@ -227,6 +246,71 @@
             if (!hasWaiting) waitingContainer.innerHTML = '<div class="text-center text-gray-400 italic py-8 border-2 border-dashed border-gray-200 rounded-xl">Hàng chờ đang trống.</div>';
         }
 
+        function refreshWaitingUIAfterSelection() {
+            const keyword = document.getElementById('searchWaiting').value.toUpperCase();
+            renderWaitingUI(waitingData.filter(item => item.status === 'Active' || item.mssv.toUpperCase().includes(keyword) || (item.name && item.name.toUpperCase().includes(keyword))));
+        }
+
+        function handleWaitCardClick(event, mssv) {
+            if (event.shiftKey && lastSelectedWaitMssv) {
+                const currentIndex = currentWaitRenderedList.indexOf(mssv);
+                const lastIndex = currentWaitRenderedList.indexOf(lastSelectedWaitMssv);
+                if (currentIndex !== -1 && lastIndex !== -1) {
+                    const start = Math.min(currentIndex, lastIndex);
+                    const end = Math.max(currentIndex, lastIndex);
+                    if (!event.ctrlKey && !event.metaKey) selectedWaitItems.clear(); 
+                    for (let i = start; i <= end; i++) selectedWaitItems.add(currentWaitRenderedList[i]);
+                }
+            } else if (event.ctrlKey || event.metaKey) {
+                if (selectedWaitItems.has(mssv)) selectedWaitItems.delete(mssv);
+                else selectedWaitItems.add(mssv);
+                lastSelectedWaitMssv = mssv;
+            } else {
+                if (selectedWaitItems.has(mssv) && selectedWaitItems.size === 1) {
+                    selectedWaitItems.delete(mssv);
+                    lastSelectedWaitMssv = null;
+                } else {
+                    selectedWaitItems.clear();
+                    selectedWaitItems.add(mssv);
+                    lastSelectedWaitMssv = mssv;
+                }
+            }
+            refreshWaitingUIAfterSelection();
+        }
+
+        function openWaitThreeDotMenu(event, mssv) {
+            event.stopPropagation();
+            if (!selectedWaitItems.has(mssv)) {
+                selectedWaitItems.clear(); selectedWaitItems.add(mssv); lastSelectedWaitMssv = mssv;
+                refreshWaitingUIAfterSelection();
+            }
+            handleWaitContextMenu(event, mssv);
+        }
+
+        function handleWaitContextMenu(event, mssv) {
+            event.preventDefault(); 
+            if (!selectedWaitItems.has(mssv)) {
+                selectedWaitItems.clear(); selectedWaitItems.add(mssv); lastSelectedWaitMssv = mssv;
+                refreshWaitingUIAfterSelection();
+            }
+
+            const count = selectedWaitItems.size;
+            document.getElementById('ctxWaitMenuEdit').innerHTML = count > 1 ? `✏️ Sửa Tên/MSSV (${count})` : `✏️ Sửa Tên/MSSV`;
+            document.getElementById('ctxWaitMenuView').innerHTML = count > 1 ? `👁️ Xem Mật khẩu (${count})` : `👁️ Xem Mật khẩu`;
+            document.getElementById('ctxWaitMenuDelete').innerHTML = count > 1 ? `🗑️ Hủy đăng ký (${count})` : `🗑️ Hủy đăng ký`;
+
+            const menu = document.getElementById('waitBatchContextMenu');
+            menu.classList.remove('hidden');
+            
+            let x = event.clientX; let y = event.clientY;
+            if (x + 200 > window.innerWidth) x = window.innerWidth - 200; 
+            if (y + 150 > window.innerHeight) y = window.innerHeight - 150;
+            menu.style.left = x + 'px'; menu.style.top = y + 'px';
+        }
+
+        // ==========================================
+        // VẼ & CHỌN VÙNG LỊCH SỬ THƯ MỤC (ĐA CHỌN)
+        // ==========================================
         function renderCompletedUI(list) {
             const grid = document.getElementById('completedGrid');
             grid.innerHTML = '';
@@ -326,6 +410,9 @@
             menu.style.left = x + 'px'; menu.style.top = y + 'px';
         }
 
+        // ==========================================
+        // CÁC HÀM XỬ LÝ HÀNG LOẠT (BATCH) CHO LỊCH SỬ THƯ MỤC
+        // ==========================================
         async function batchOpenDrive() {
             document.getElementById('batchContextMenu').classList.add('hidden');
             if (selectedItems.size === 0) return;
@@ -348,7 +435,6 @@
         async function batchEditMSSV() {
             document.getElementById('batchContextMenu').classList.add('hidden');
             if (selectedItems.size === 0) return;
-            
             for (let oldMssv of selectedItems) {
                 const newMssv = prompt(`Sửa tên/MSSV cho "${oldMssv}":\nNhập tên/mã mới (hoặc bấm Hủy):`, oldMssv);
                 if (newMssv && newMssv.trim() !== oldMssv) {
@@ -381,72 +467,122 @@
             selectedItems.clear(); fetchAllData();
         }
 
-        async function editMSSV_Wait(oldMssv) {
-            const newMssv = prompt(`Sửa tên/MSSV cho ${oldMssv}:`, oldMssv);
-            if (!newMssv || newMssv.trim() === oldMssv) return;
-            const isStandard = /^[a-zA-Z]{3}\d{6}$/.test(newMssv.trim());
-            const finalMssv = isStandard ? newMssv.trim().toUpperCase() : newMssv.trim();
+        // ==========================================
+        // CÁC HÀM XỬ LÝ HÀNG LOẠT (BATCH) CHO HÀNG ĐỢI
+        // ==========================================
+        async function batchEditWaitMSSV() {
+            document.getElementById('waitBatchContextMenu').classList.add('hidden');
+            if (selectedWaitItems.size === 0) return;
+            for (let oldMssv of selectedWaitItems) {
+                const newMssv = prompt(`Sửa tên/MSSV cho "${oldMssv}":\nNhập tên/mã mới (hoặc bấm Hủy):`, oldMssv);
+                if (newMssv && newMssv.trim() !== oldMssv) {
+                    const isStandard = /^[a-zA-Z]{3}\d{6}$/.test(newMssv.trim());
+                    const finalMssv = isStandard ? newMssv.trim().toUpperCase() : newMssv.trim();
+                    document.getElementById('loadingIndicator').classList.remove('hidden');
+                    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'update_mssv', old_mssv: oldMssv, new_mssv: finalMssv }) }); } catch (e) { alert("Lỗi khi sửa " + oldMssv); }
+                }
+            }
+            selectedWaitItems.clear(); fetchAllData();
+        }
+
+        function batchViewWaitPasswords() {
+            document.getElementById('waitBatchContextMenu').classList.add('hidden');
+            if (selectedWaitItems.size === 0) return;
+            let msg = "MẬT KHẨU CÁC KHÁCH HÀNG ĐỢI ĐÃ CHỌN:\n\n";
+            selectedWaitItems.forEach(mssv => {
+                const item = waitingData.find(d => d.mssv === mssv);
+                if (item) msg += `⏳ ${mssv}  ➔  🔑 ${item.password}\n`;
+            });
+            alert(msg);
+        }
+
+        async function batchDeleteWait() {
+            document.getElementById('waitBatchContextMenu').classList.add('hidden');
+            if (selectedWaitItems.size === 0) return;
+            if(!confirm(`XÓA HÀNG ĐỢI: Bạn có chắc muốn hủy đăng ký của ${selectedWaitItems.size} sinh viên khỏi hàng đợi?`)) return;
             document.getElementById('loadingIndicator').classList.remove('hidden');
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'update_mssv', old_mssv: oldMssv, new_mssv: finalMssv }) });
-                const result = await response.json();
-                if (result.status === 'success') { openMenuMssv = null; fetchAllData(); }
-            } catch (error) {}
+            for (let mssv of selectedWaitItems) { try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_record', mssv: mssv }) }); } catch (e) {} }
+            selectedWaitItems.clear(); fetchAllData();
         }
 
-        async function deleteRecordWait(mssv) {
-            if(!confirm(`Xóa hàng đợi của ${mssv}?`)) return;
-            document.getElementById('loadingIndicator').classList.remove('hidden');
-            try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_record', mssv: mssv }) });
-                const result = await response.json();
-                if (result.status === 'success') fetchAllData();
-            } catch (error) {}
-        }
-
-        function toggleMenuWait(event, id) {
-            event.stopPropagation();
-            if (openMenuMssv === id) { document.getElementById('menu-' + id).classList.add('hidden'); openMenuMssv = null; return; }
-            document.querySelectorAll('.dropdown-menu-wait').forEach(el => el.classList.add('hidden'));
-            document.getElementById('menu-' + id).classList.remove('hidden');
-            openMenuMssv = id;
-        }
-
+        // Đóng các Menu nổi khi click ra ngoài
         document.addEventListener('click', function(e) {
             const batchMenu = document.getElementById('batchContextMenu');
             if (batchMenu && !e.target.closest('#batchContextMenu')) batchMenu.classList.add('hidden');
-            if (!e.target.closest('.group-menu')) {
-                document.querySelectorAll('.dropdown-menu-wait').forEach(el => el.classList.add('hidden'));
-                openMenuMssv = null;
+            
+            const waitBatchMenu = document.getElementById('waitBatchContextMenu');
+            if (waitBatchMenu && !e.target.closest('#waitBatchContextMenu')) waitBatchMenu.classList.add('hidden');
+
+            const quickAddDropdown = document.getElementById('quickAddDropdown');
+            if (quickAddDropdown && !quickAddDropdown.classList.contains('hidden') && !e.target.closest('#btnQuickAdd')) {
+                quickAddDropdown.classList.add('hidden');
             }
         });
 
-        document.getElementById('searchWaiting').addEventListener('input', function(e) {
-            const keyword = e.target.value.toUpperCase();
-            renderWaitingUI(waitingData.filter(item => item.status === 'Active' || item.mssv.toUpperCase().includes(keyword) || (item.name && item.name.toUpperCase().includes(keyword))));
-        });
-        document.getElementById('searchCompleted').addEventListener('input', function() { refreshCompletedUIAfterSelection(); });
+        // Tìm kiếm
+        document.getElementById('searchWaiting').addEventListener('input', refreshWaitingUIAfterSelection);
+        document.getElementById('searchCompleted').addEventListener('input', refreshCompletedUIAfterSelection);
 
         // ==========================================
-        // Modal Thêm Nhanh (Gộp Sinh viên & Khách VIP)
+        // Modal Thêm Nhanh & Dropdown (Sửa Click)
         // ==========================================
+        function toggleQuickAddDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('quickAddDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
         function openQuickAddModal(type) {
-            // Thay đổi giao diện modal tùy thuộc vào Admin chọn tạo Sinh viên hay VIP
             const isStudent = (type === 'student');
             
             document.getElementById('quickAddTypeVal').value = type;
-            document.getElementById('quickAddTitle').innerHTML = isStudent ? 'Đăng ký Sinh viên' : 'Đăng ký Khách VIP';
+            
+            // THAY ĐỔI GIAO DIỆN TEXT POPUP
+            document.getElementById('quickAddTitle').innerHTML = isStudent ? 'Ép tạo thư mục sớm' : 'Đăng ký Khách VIP';
             document.getElementById('quickAddTitle').className = isStudent ? 'text-xl font-black text-blue-600 mb-1 flex items-center' : 'text-xl font-black text-purple-700 mb-1 flex items-center';
-            document.getElementById('quickAddLabel').innerHTML = isStudent ? 'Mã số sinh viên (Bắt buộc đúng chuẩn)' : 'Tên Khách VIP';
+            document.getElementById('quickAddDesc').innerHTML = isStudent ? 'Đối chiếu Hàng đợi, đẩy thẳng sinh viên sang Lịch sử thư mục.' : 'Tạo nhanh thư mục và cấp mã bỏ qua bước điền form.';
+            
+            document.getElementById('quickAddLabel').innerHTML = isStudent ? 'Nhập MSSV đang đợi (Bắt buộc đúng)' : 'Tên Khách VIP';
             document.getElementById('quickAddInput').placeholder = isStudent ? 'VD: BEC250024' : 'VD: Thầy Hoàng';
             
+            document.getElementById('btnQuickAddSubmit').innerHTML = isStudent ? 'TẠO THƯ MỤC NGAY' : 'TẠO NHANH & XẾP HÀNG';
             document.getElementById('btnQuickAddSubmit').className = isStudent 
                 ? 'w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2' 
                 : 'w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2';
 
+            // --- XỬ LÝ ĐỔI MÀU VIỀN XANH/TÍM ---
+            const inputField = document.getElementById('quickAddInput');
+            const passField = document.getElementById('quickAddPassword');
+            const eyeBtn = passField.nextElementSibling; // Lấy nút bấm chứa con mắt
+
+            // Xóa hết màu cũ trước
+            inputField.classList.remove('focus:border-purple-500', 'focus:border-blue-500');
+            passField.classList.remove('focus:border-purple-500', 'focus:border-blue-500');
+            eyeBtn.classList.remove('hover:text-purple-600', 'hover:text-blue-600');
+
+            // Gắn màu mới tương ứng
+            if (isStudent) {
+                inputField.classList.add('focus:border-blue-500');
+                passField.classList.add('focus:border-blue-500');
+                eyeBtn.classList.add('hover:text-blue-600');
+            } else {
+                inputField.classList.add('focus:border-purple-500');
+                passField.classList.add('focus:border-purple-500');
+                eyeBtn.classList.add('hover:text-purple-600');
+            }
+
+            // XÓA DỮ LIỆU CŨ KHI BẬT LẠI POPUP
             document.getElementById('quickAddInput').value = '';
-            document.getElementById('quickAddPassword').value = '';
             document.getElementById('quickAddError').textContent = '';
+            
+            // KHÔI PHỤC TRẠNG THÁI MẮT NHẮM VÀ ẨN MẬT KHẨU
+            const pwdInput = document.getElementById('quickAddPassword');
+            pwdInput.value = '';
+            pwdInput.type = 'password'; 
+            document.getElementById('quickAddEyeIcon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+            
+            // Đóng menu thả xuống và bật Popup lên
+            document.getElementById('quickAddDropdown').classList.add('hidden');
             document.getElementById('quickAddModal').classList.remove('hidden');
         }
 
@@ -455,12 +591,15 @@
         function toggleQuickAddPassword() {
             const pwd = document.getElementById('quickAddPassword');
             const eyeIcon = document.getElementById('quickAddEyeIcon');
+            
             if (pwd.type === 'password') {
                 pwd.type = 'text';
-                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+                // Đổi sang icon mắt mở (Đầy đủ 2 đường path)
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
             } else {
                 pwd.type = 'password';
-                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>';
+                // Đổi về icon mắt nhắm/gạch chéo
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
             }
         }
 
@@ -472,27 +611,66 @@
             const btn = document.getElementById('btnQuickAddSubmit');
             const err = document.getElementById('quickAddError');
 
-            // Validate nếu chọn thêm Sinh viên thủ công
+            btn.disabled = true;
+            btn.innerHTML = "ĐANG XỬ LÝ...";
+            err.textContent = "";
+
+            // ==============================================
+            // NHÁNH 1: ÉP TẠO THƯ MỤC CHO SINH VIÊN (WAITING -> COMPLETED)
+            // ==============================================
             if (type === 'student') {
                 const isValid = /^[A-Za-z]{3}\d{6}$/.test(inputVal);
                 if (!isValid) {
                     err.textContent = "Lỗi: Mã sinh viên phải gồm 3 chữ cái và 6 số (VD: BEC250024)!";
+                    btn.disabled = false; btn.innerHTML = "TẠO THƯ MỤC NGAY";
                     return;
                 }
+                
+                // BƯỚC 1: Tìm sinh viên trong Hàng đợi
+                const studentInWait = waitingData.find(s => s.mssv === inputVal.toUpperCase() && s.status === 'Waiting');
+                if (!studentInWait) {
+                    err.textContent = "Lỗi: Không tìm thấy MSSV này trong Hàng đợi!";
+                    btn.disabled = false; btn.innerHTML = "TẠO THƯ MỤC NGAY";
+                    return;
+                }
+                
+                // BƯỚC 2: Đối chiếu Mật khẩu
+                if (String(studentInWait.password) !== pass) {
+                    err.textContent = "Lỗi: Mật khẩu không khớp với lúc đăng ký!";
+                    btn.disabled = false; btn.innerHTML = "TẠO THƯ MỤC NGAY";
+                    return;
+                }
+
+                // BƯỚC 3: Thay vì đăng ký mới, cập nhật thẳng trạng thái sang Completed
+                try {
+                    const response = await fetch(API_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: 'update_status', mssv: inputVal.toUpperCase(), status: 'Completed' }) 
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        closeQuickAddModal();
+                        switchTab('tab2'); // Chuyển thẳng sang Tab Lịch sử để Admin chiêm ngưỡng
+                        fetchAllData();
+                    } else err.textContent = result.message;
+                } catch (error) { err.textContent = "Lỗi mạng!"; }
+                
+                btn.disabled = false; btn.innerHTML = "TẠO THƯ MỤC NGAY";
+                return; // KẾT THÚC NHÁNH SINH VIÊN
             }
 
-            btn.disabled = true;
-            btn.innerHTML = "ĐANG TẠO...";
-            err.textContent = "";
-
+            // ==============================================
+            // NHÁNH 2: TẠO MỚI KHÁCH VIP (GIỮ NGUYÊN NHƯ CŨ)
+            // ==============================================
             try {
                 const response = await fetch(API_URL, { 
                     method: 'POST', 
                     body: JSON.stringify({ 
                         action: 'register', 
-                        mssv: type === 'student' ? inputVal.toUpperCase() : inputVal, 
+                        mssv: inputVal, 
                         password: pass, 
-                        name: type === 'student' ? 'Chụp thủ công' : 'Khách VIP' 
+                        name: 'Khách VIP' 
                     }) 
                 });
                 const result = await response.json();
@@ -503,6 +681,7 @@
                     fetchAllData();
                 } else err.textContent = result.message;
             } catch (error) { err.textContent = "Lỗi mạng!"; }
+            
             btn.disabled = false; btn.innerHTML = "TẠO NHANH & XẾP HÀNG";
         });
 
