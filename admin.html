@@ -18,18 +18,10 @@
 
     <!-- MENU NỔI (DÙNG CHUNG CHO CHUỘT PHẢI & NÚT 3 CHẤM) -->
     <div id="batchContextMenu" class="hidden fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[100] overflow-hidden">
-        <button id="ctxMenuDrive" onclick="batchOpenDrive()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">
-            🔗 Mở thư mục Drive
-        </button>
-        <button id="ctxMenuEdit" onclick="batchEditMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">
-            ✏️ Sửa Tên/MSSV
-        </button>
-        <button id="ctxMenuView" onclick="batchViewPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">
-            👁️ Xem Mật khẩu
-        </button>
-        <button id="ctxMenuDelete" onclick="batchDelete()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">
-            🗑️ Xóa thư mục
-        </button>
+        <button id="ctxMenuDrive" onclick="batchOpenDrive()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">🔗 Mở thư mục Drive</button>
+        <button id="ctxMenuEdit" onclick="batchEditMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
+        <button id="ctxMenuView" onclick="batchViewPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">👁️ Xem Mật khẩu</button>
+        <button id="ctxMenuDelete" onclick="batchDelete()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Xóa thư mục</button>
     </div>
 
     <div class="max-w-md mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden flex flex-col">
@@ -42,7 +34,6 @@
             </button>
         </div>
 
-        <!-- Khối ghim cố định: Người đang chụp -->
         <div class="p-4 bg-blue-50 border-b border-blue-100 z-10 shadow-sm">
             <h2 class="text-xs font-bold text-blue-500 uppercase mb-2 tracking-wider flex items-center">
                 <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span> LƯỢT CHỤP HIỆN TẠI
@@ -52,25 +43,39 @@
             </div>
         </div>
 
-        <!-- Navbar Tabs -->
         <div class="flex bg-white shadow-sm z-10 sticky top-0 border-b border-gray-200">
             <button id="btnTab1" onclick="switchTab('tab1')" class="flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide">HÀNG ĐỢI</button>
             <button id="btnTab2" onclick="switchTab('tab2')" class="flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide">LỊCH SỬ THƯ MỤC</button>
         </div>
 
-        <!-- TAB 1: HÀNG ĐỢI & VIP -->
+        <!-- TAB 1: HÀNG ĐỢI & THÊM NHANH -->
         <div id="tab1" class="flex-1 p-4 fade-in">
-            <div class="flex gap-2 mb-4">
+            <div class="flex gap-2 mb-4 relative">
                 <div class="relative flex-1">
                     <input type="text" id="searchWaiting" placeholder="Tìm MSSV đang đợi..." class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 transition-colors uppercase font-bold text-gray-700 text-sm">
                     <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
-                <button onclick="openVipModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md active:scale-95 transition-transform flex items-center">+ VIP</button>
+                
+                <!-- SỬA LỖI UI: Dropdown Thêm Nhanh (Sinh viên / Khách VIP) -->
+                <div class="relative group">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white h-full px-4 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center justify-center">
+                        + THÊM NHANH
+                    </button>
+                    <!-- Khối thả xuống ẩn đi, chỉ hiện khi hover -->
+                    <div class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-2xl border border-gray-200 hidden group-hover:block z-50 overflow-hidden">
+                        <button onclick="openQuickAddModal('student')" class="w-full text-left px-4 py-3 text-xs font-bold text-blue-600 hover:bg-blue-50 border-b border-gray-100 flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> + Sinh viên
+                        </button>
+                        <button onclick="openQuickAddModal('vip')" class="w-full text-left px-4 py-3 text-xs font-bold text-purple-600 hover:bg-purple-50 flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span> + Khách VIP
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <div id="waitingListContainer" class="space-y-3 pb-4"></div>
         </div>
 
-        <!-- TAB 2: LỊCH SỬ -->
         <div id="tab2" class="flex-1 p-4 bg-gray-50 hidden fade-in">
             <div class="mb-4 relative">
                 <input type="text" id="searchCompleted" placeholder="Tìm kiếm thư mục..." class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 transition-colors font-bold text-gray-700 text-sm shadow-sm">
@@ -80,26 +85,32 @@
         </div>
     </div>
 
-    <!-- Modal Đăng ký VIP -->
-    <div id="vipModal" onclick="closeVipModal()" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 fade-in cursor-pointer">
+    <!-- Modal Thêm Nhanh (Dùng chung cho cả Sinh viên và VIP) -->
+    <div id="quickAddModal" onclick="closeQuickAddModal()" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 fade-in cursor-pointer">
         <div onclick="event.stopPropagation()" class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative cursor-default">
-            <button onclick="closeVipModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            <h3 class="text-xl font-black text-purple-700 mb-1 flex items-center">Đăng ký Khách VIP</h3>
-            <p class="text-xs text-gray-500 mb-4">Tạo nhanh thư mục và cấp mã cho Thầy cô/Khách mời.</p>
-            <form id="vipForm" class="space-y-4">
+            <button onclick="closeQuickAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            
+            <!-- Tiêu đề động -->
+            <h3 id="quickAddTitle" class="text-xl font-black text-purple-700 mb-1 flex items-center">Đăng ký thủ công</h3>
+            <p id="quickAddDesc" class="text-xs text-gray-500 mb-4">Tạo nhanh thư mục và cấp mã bỏ qua bước điền form.</p>
+            
+            <form id="quickAddForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Tên Thư Mục VIP</label>
-                    <input type="text" id="vipName" required placeholder="VD: Thầy Hoàng" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-bold text-gray-800">
+                    <label id="quickAddLabel" class="block text-sm font-bold text-gray-700 mb-1">Mã số / Tên Thư Mục</label>
+                    <input type="text" id="quickAddInput" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-bold text-gray-800 uppercase">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Mật khẩu (6 số)</label>
                     <div class="relative">
-                        <input type="password" id="vipPassword" required placeholder="••••••" maxlength="6" inputmode="numeric" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-black tracking-widest text-center text-lg pr-12">
-                        <button type="button" onclick="toggleVipPassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-purple-600"><svg id="vipEyeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
+                        <input type="password" id="quickAddPassword" required placeholder="••••••" maxlength="6" inputmode="numeric" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-black tracking-widest text-center text-lg pr-12">
+                        <button type="button" onclick="toggleQuickAddPassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-purple-600"><svg id="quickAddEyeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
                     </div>
                 </div>
-                <button type="submit" id="btnVipSubmit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2">TẠO NHANH & XẾP HÀNG</button>
-                <p id="vipError" class="text-red-500 text-xs font-bold text-center h-4 mt-2"></p>
+                <!-- Cờ ẩn để biết đang tạo Sinh Viên hay VIP -->
+                <input type="hidden" id="quickAddTypeVal" value="vip">
+
+                <button type="submit" id="btnQuickAddSubmit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2">TẠO NHANH & XẾP HÀNG</button>
+                <p id="quickAddError" class="text-red-500 text-xs font-bold text-center h-4 mt-2"></p>
             </form>
         </div>
     </div>
@@ -117,16 +128,12 @@
         let completedData = [];
         let openMenuMssv = null; 
         let isFirstLoad = true;
-
-        // BỘ NHỚ LƯU TRỮ VÙNG CHỌN GIỐNG GOOGLE DRIVE
         let selectedItems = new Set(); 
         let lastSelectedMssv = null; 
         let currentRenderedList = []; 
 
         function switchTab(tabId) {
-            // Lưu trạng thái tab Admin vào trình duyệt
             localStorage.setItem('admin_current_tab', tabId);
-
             document.getElementById('tab1').classList.add('hidden');
             document.getElementById('tab2').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
@@ -134,8 +141,6 @@
             document.getElementById('btnTab1').className = tabId === 'tab1' ? "flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide" : "flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide";
             document.getElementById('btnTab2').className = tabId === 'tab2' ? "flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide" : "flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide";
         }
-
-        // Tự động khôi phục đúng Tab trước đó khi Admin F5
         const initialAdminTab = localStorage.getItem('admin_current_tab') || 'tab1';
         switchTab(initialAdminTab);
 
@@ -197,7 +202,6 @@
                     const isVip = !/^[A-Za-z]{3}\d{6}$/.test(student.mssv); 
                     const badge = isVip ? `<span class="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-black uppercase ml-2">VIP</span>` : '';
                     
-                    // Tab Hàng đợi vẫn giữ menu thả xuống nguyên bản
                     const menuClass = (openMenuMssv === 'wait-' + student.mssv) ? "" : "hidden";
 
                     waitingContainer.innerHTML += `
@@ -223,14 +227,9 @@
             if (!hasWaiting) waitingContainer.innerHTML = '<div class="text-center text-gray-400 italic py-8 border-2 border-dashed border-gray-200 rounded-xl">Hàng chờ đang trống.</div>';
         }
 
-        // ==========================================
-        // VẼ KHO ẢNH (HỖ TRỢ CHỌN CHUỘT NHIỀU FILE & CLICK CHUỘT PHẢI)
-        // ==========================================
         function renderCompletedUI(list) {
             const grid = document.getElementById('completedGrid');
             grid.innerHTML = '';
-            
-            // Lưu mảng hiện tại để chạy vòng lặp chọn Shift-Click
             currentRenderedList = list.map(item => item.mssv);
             
             if(list.length === 0) {
@@ -244,26 +243,18 @@
                 const color = isVip ? 'text-purple-500' : 'text-blue-500';
                 
                 const nameHtml = (isVip || item.name === 'Khách VIP') ? `<div class="mb-3 h-[15px]"></div>` : `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-2 mb-3" title="${item.name}">${item.name}</span>`;
-
-                // Xóa biến isChecked và thẻ input checkbox đi
                 const cardBg = selectedItems.has(mssv) ? 'bg-blue-50 border-blue-400 shadow-md ring-1 ring-blue-400' : 'bg-white border-gray-100 shadow-sm hover:bg-gray-50';
 
-                // Ô vuông được gắn sự kiện onclick (Click thường/Ctrl/Shift) và oncontextmenu (Chuột phải)
                 grid.innerHTML += `
                     <div onclick="handleCardClick(event, '${mssv}')" oncontextmenu="handleContextMenu(event, '${mssv}')" class="${cardBg} p-3 rounded-xl border flex flex-col items-center justify-between h-full relative cursor-pointer select-none transition-colors">
-
-                        <!-- Nút 3 chấm mồi (gọi ra menu nổi giống click chuột phải) -->
                         <div class="absolute top-2 right-2 z-20">
                             <button onclick="openThreeDotMenu(event, '${mssv}')" class="text-gray-400 hover:text-gray-800 transition-colors p-1.5 rounded-md hover:bg-gray-200 shadow-sm border border-transparent">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
                             </button>
                         </div>
-
                         <svg class="w-10 h-10 ${color} mb-1 opacity-80 mt-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
                         <span class="font-bold text-gray-700 tracking-wide text-sm truncate w-full text-center px-2 mt-1" title="${mssv}">${mssv}</span>
                         ${nameHtml}
-                        
-                        <!-- Chặn sự kiện click để không chọn nhầm khi bấm Chụp bổ sung -->
                         <button onclick="event.stopPropagation(); updateStatus('${mssv}', 'Active')" class="w-full bg-gray-100 hover:bg-blue-200 text-blue-600 font-bold py-2 rounded-lg text-xs transition-colors border border-gray-200 z-20 relative">
                             Chụp bổ sung
                         </button>
@@ -272,15 +263,11 @@
             });
         }
 
-        // ==========================================
-        // CÁC HÀM XỬ LÝ CHỌN VÙNG VÀ CHUỘT PHẢI
-        // ==========================================
         function refreshCompletedUIAfterSelection() {
             const keyword = document.getElementById('searchCompleted').value.toUpperCase();
             renderCompletedUI(completedData.filter(item => item.mssv.toUpperCase().includes(keyword) || (item.name && item.name.toUpperCase().includes(keyword))));
         }
 
-        // Bấm vào cả một Ô thư mục (Xử lý Ctrl, Shift, Click chuột trái, Bỏ chọn)
         function handleCardClick(event, mssv) {
             if (event.shiftKey && lastSelectedMssv) {
                 const currentIndex = currentRenderedList.indexOf(mssv);
@@ -296,7 +283,6 @@
                 else selectedItems.add(mssv);
                 lastSelectedMssv = mssv;
             } else {
-                // TÍNH NĂNG MỚI: Bấm lại vào ô đang được chọn duy nhất thì sẽ Bỏ chọn ô đó
                 if (selectedItems.has(mssv) && selectedItems.size === 1) {
                     selectedItems.delete(mssv);
                     lastSelectedMssv = null;
@@ -309,30 +295,22 @@
             refreshCompletedUIAfterSelection();
         }
 
-        // Bấm nút 3 chấm (Thay vì hiện menu tại ô đó, sẽ hiện Menu nổi)
         function openThreeDotMenu(event, mssv) {
             event.stopPropagation();
             if (!selectedItems.has(mssv)) {
-                selectedItems.clear();
-                selectedItems.add(mssv);
-                lastSelectedMssv = mssv;
+                selectedItems.clear(); selectedItems.add(mssv); lastSelectedMssv = mssv;
                 refreshCompletedUIAfterSelection();
             }
             handleContextMenu(event, mssv);
         }
 
-        // Click Chuột phải (Hiện Menu Nổi)
         function handleContextMenu(event, mssv) {
             event.preventDefault(); 
-            
             if (!selectedItems.has(mssv)) {
-                selectedItems.clear();
-                selectedItems.add(mssv);
-                lastSelectedMssv = mssv;
+                selectedItems.clear(); selectedItems.add(mssv); lastSelectedMssv = mssv;
                 refreshCompletedUIAfterSelection();
             }
 
-            // Đổi chữ trong menu nổi theo số lượng chọn
             const count = selectedItems.size;
             document.getElementById('ctxMenuDrive').innerHTML = count > 1 ? `🔗 Mở thư mục Drive (${count})` : `🔗 Mở thư mục Drive`;
             document.getElementById('ctxMenuEdit').innerHTML = count > 1 ? `✏️ Sửa Tên/MSSV (${count})` : `✏️ Sửa Tên/MSSV`;
@@ -345,47 +323,26 @@
             let x = event.clientX; let y = event.clientY;
             if (x + 200 > window.innerWidth) x = window.innerWidth - 200; 
             if (y + 150 > window.innerHeight) y = window.innerHeight - 150;
-
-            menu.style.left = x + 'px';
-            menu.style.top = y + 'px';
+            menu.style.left = x + 'px'; menu.style.top = y + 'px';
         }
 
-        // ==========================================
-        // CÁC HÀM XỬ LÝ HÀNG LOẠT TỪ MENU NỔI
-        // ==========================================
-        
-        // Mở thư mục Google Drive hàng loạt
         async function batchOpenDrive() {
             document.getElementById('batchContextMenu').classList.add('hidden');
             if (selectedItems.size === 0) return;
 
-            // Xử lý mở từng tab
             for (let mssv of selectedItems) {
-                // Tạo tab rỗng ngay lập tức khi click để lách bộ chặn Popup Blocker của trình duyệt
                 const newTab = window.open('about:blank', '_blank');
-                if (!newTab) {
-                    alert("Trình duyệt đang chặn mở tab mới! Vui lòng cấp quyền (Allow Pop-ups) cho trang web này ở thanh địa chỉ phía trên.");
-                    return;
-                }
+                if (!newTab) { alert("Trình duyệt đang chặn mở tab mới! Vui lòng cấp quyền (Allow Pop-ups) cho trang web này ở thanh địa chỉ phía trên."); return; }
                 newTab.document.write(`<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:#666;"><h2>Đang tìm thư mục "${mssv}" trên Drive...</h2></body>`);
 
                 try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'get_folder_url', mssv: mssv })
-                    });
+                    const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'get_folder_url', mssv: mssv }) });
                     const result = await response.json();
-                    if (result.status === 'success') {
-                        newTab.location.href = result.folderUrl; // Chuyển hướng tab sang link Drive
-                    } else {
-                        newTab.document.write(`<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:red;"><h2>Lỗi: Thư mục chưa được đồng bộ!</h2></body>`);
-                    }
-                } catch (e) {
-                    newTab.document.write(`<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:red;"><h2>Lỗi mạng!</h2></body>`);
-                }
+                    if (result.status === 'success') newTab.location.href = result.folderUrl; 
+                    else newTab.document.write(`<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:red;"><h2>Lỗi: Thư mục chưa được đồng bộ!</h2></body>`);
+                } catch (e) { newTab.document.write(`<body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:red;"><h2>Lỗi mạng!</h2></body>`); }
             }
-            selectedItems.clear();
-            refreshCompletedUIAfterSelection();
+            selectedItems.clear(); refreshCompletedUIAfterSelection();
         }
 
         async function batchEditMSSV() {
@@ -397,21 +354,16 @@
                 if (newMssv && newMssv.trim() !== oldMssv) {
                     const isStandard = /^[a-zA-Z]{3}\d{6}$/.test(newMssv.trim());
                     const finalMssv = isStandard ? newMssv.trim().toUpperCase() : newMssv.trim();
-
                     document.getElementById('loadingIndicator').classList.remove('hidden');
-                    try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'update_mssv', old_mssv: oldMssv, new_mssv: finalMssv }) });
-                    } catch (e) { alert("Lỗi khi sửa " + oldMssv); }
+                    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'update_mssv', old_mssv: oldMssv, new_mssv: finalMssv }) }); } catch (e) { alert("Lỗi khi sửa " + oldMssv); }
                 }
             }
-            selectedItems.clear();
-            fetchAllData();
+            selectedItems.clear(); fetchAllData();
         }
 
         function batchViewPasswords() {
             document.getElementById('batchContextMenu').classList.add('hidden');
             if (selectedItems.size === 0) return;
-            
             let msg = "MẬT KHẨU CÁC THƯ MỤC ĐÃ CHỌN:\n\n";
             selectedItems.forEach(mssv => {
                 const item = completedData.find(d => d.mssv === mssv);
@@ -423,20 +375,12 @@
         async function batchDelete() {
             document.getElementById('batchContextMenu').classList.add('hidden');
             if (selectedItems.size === 0) return;
-
             if (!confirm(`CẢNH BÁO: Bạn có chắc muốn xóa vĩnh viễn ${selectedItems.size} thư mục đã chọn?`)) return;
-
             document.getElementById('loadingIndicator').classList.remove('hidden');
-            for (let mssv of selectedItems) {
-                try {
-                    await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_record', mssv: mssv }) });
-                } catch (e) {}
-            }
-            selectedItems.clear();
-            fetchAllData();
+            for (let mssv of selectedItems) { try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_record', mssv: mssv }) }); } catch (e) {} }
+            selectedItems.clear(); fetchAllData();
         }
 
-        // Các hàm xử lý Hàng đợi (Wait) đơn lẻ
         async function editMSSV_Wait(oldMssv) {
             const newMssv = prompt(`Sửa tên/MSSV cho ${oldMssv}:`, oldMssv);
             if (!newMssv || newMssv.trim() === oldMssv) return;
@@ -468,7 +412,6 @@
             openMenuMssv = id;
         }
 
-        // Tự động đóng menu nếu click ra ngoài
         document.addEventListener('click', function(e) {
             const batchMenu = document.getElementById('batchContextMenu');
             if (batchMenu && !e.target.closest('#batchContextMenu')) batchMenu.classList.add('hidden');
@@ -482,17 +425,36 @@
             const keyword = e.target.value.toUpperCase();
             renderWaitingUI(waitingData.filter(item => item.status === 'Active' || item.mssv.toUpperCase().includes(keyword) || (item.name && item.name.toUpperCase().includes(keyword))));
         });
-
         document.getElementById('searchCompleted').addEventListener('input', function() { refreshCompletedUIAfterSelection(); });
 
         // ==========================================
-        // Modal VIP
+        // Modal Thêm Nhanh (Gộp Sinh viên & Khách VIP)
         // ==========================================
-        function openVipModal() { document.getElementById('vipModal').classList.remove('hidden'); }
-        function closeVipModal() { document.getElementById('vipModal').classList.add('hidden'); }
-        function toggleVipPassword() {
-            const pwd = document.getElementById('vipPassword');
-            const eyeIcon = document.getElementById('vipEyeIcon');
+        function openQuickAddModal(type) {
+            // Thay đổi giao diện modal tùy thuộc vào Admin chọn tạo Sinh viên hay VIP
+            const isStudent = (type === 'student');
+            
+            document.getElementById('quickAddTypeVal').value = type;
+            document.getElementById('quickAddTitle').innerHTML = isStudent ? 'Đăng ký Sinh viên' : 'Đăng ký Khách VIP';
+            document.getElementById('quickAddTitle').className = isStudent ? 'text-xl font-black text-blue-600 mb-1 flex items-center' : 'text-xl font-black text-purple-700 mb-1 flex items-center';
+            document.getElementById('quickAddLabel').innerHTML = isStudent ? 'Mã số sinh viên (Bắt buộc đúng chuẩn)' : 'Tên Khách VIP';
+            document.getElementById('quickAddInput').placeholder = isStudent ? 'VD: BEC250024' : 'VD: Thầy Hoàng';
+            
+            document.getElementById('btnQuickAddSubmit').className = isStudent 
+                ? 'w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2' 
+                : 'w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2';
+
+            document.getElementById('quickAddInput').value = '';
+            document.getElementById('quickAddPassword').value = '';
+            document.getElementById('quickAddError').textContent = '';
+            document.getElementById('quickAddModal').classList.remove('hidden');
+        }
+
+        function closeQuickAddModal() { document.getElementById('quickAddModal').classList.add('hidden'); }
+        
+        function toggleQuickAddPassword() {
+            const pwd = document.getElementById('quickAddPassword');
+            const eyeIcon = document.getElementById('quickAddEyeIcon');
             if (pwd.type === 'password') {
                 pwd.type = 'text';
                 eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
@@ -502,24 +464,43 @@
             }
         }
 
-        document.getElementById('vipForm').addEventListener('submit', async function(e) {
+        document.getElementById('quickAddForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const name = document.getElementById('vipName').value.trim();
-            const pass = document.getElementById('vipPassword').value;
-            const btn = document.getElementById('btnVipSubmit');
-            const err = document.getElementById('vipError');
+            const inputVal = document.getElementById('quickAddInput').value.trim().replace(/\s+/g, '');
+            const pass = document.getElementById('quickAddPassword').value;
+            const type = document.getElementById('quickAddTypeVal').value;
+            const btn = document.getElementById('btnQuickAddSubmit');
+            const err = document.getElementById('quickAddError');
+
+            // Validate nếu chọn thêm Sinh viên thủ công
+            if (type === 'student') {
+                const isValid = /^[A-Za-z]{3}\d{6}$/.test(inputVal);
+                if (!isValid) {
+                    err.textContent = "Lỗi: Mã sinh viên phải gồm 3 chữ cái và 6 số (VD: BEC250024)!";
+                    return;
+                }
+            }
 
             btn.disabled = true;
             btn.innerHTML = "ĐANG TẠO...";
             err.textContent = "";
 
             try {
-                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', mssv: name, password: pass, name: 'Khách VIP' }) });
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'register', 
+                        mssv: type === 'student' ? inputVal.toUpperCase() : inputVal, 
+                        password: pass, 
+                        name: type === 'student' ? 'Chụp thủ công' : 'Khách VIP' 
+                    }) 
+                });
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    closeVipModal(); document.getElementById('vipName').value = ''; document.getElementById('vipPassword').value = '';
-                    switchTab('tab1'); fetchAllData();
+                    closeQuickAddModal();
+                    switchTab('tab1'); 
+                    fetchAllData();
                 } else err.textContent = result.message;
             } catch (error) { err.textContent = "Lỗi mạng!"; }
             btn.disabled = false; btn.innerHTML = "TẠO NHANH & XẾP HÀNG";
