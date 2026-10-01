@@ -614,7 +614,7 @@
         let width, height;
         let particles = [];
         
-        const particleCount = window.innerWidth < 768 ? 65 : 140; 
+        const particleCount = window.innerWidth < 768 ? 120 : 280;
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -706,13 +706,13 @@
                     let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
                     if (distMouse < mouseConnectionDistance) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 - distMouse / mouseConnectionDistance})`;
-                        ctx.lineWidth = 1;
+                        // Tăng độ sáng của tia nối chuột lên một chút để thêm phần nổi bật
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
+                        ctx.lineWidth = 1.2;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(mouse.x, mouse.y);
                         ctx.stroke();
-                        particles[i].x -= dxMouse * 0.01;
-                        particles[i].y -= dyMouse * 0.01;
+                        // ĐÃ XÓA 2 DÒNG LỰC HÚT VẬT LÝ Ở ĐÂY ĐỂ GIỮ NỀN LUÔN CÂN BẰNG
                     }
                 }
             }
