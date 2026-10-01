@@ -6,10 +6,7 @@
     <title>Photobooth - CLB Sinh viên NCKH CMC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* CHẶN ZOOM KHI CLICK LIÊN TỤC TRÊN TOÀN BỘ WEB (KỂ CẢ TRONG FORM) */
-        *, *::before, *::after {
-            touch-action: manipulation !important;
-        }
+        *, *::before, *::after { touch-action: manipulation !important; }
 
         input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
         input[type="password"]::-webkit-reveal { display: none; }
@@ -50,7 +47,6 @@
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-            /* Ép font chữ 16px để iOS Safari tuyệt đối không tự zoom khi bấm vào ô chữ */
             font-size: 16px !important; 
         }
         
@@ -58,9 +54,9 @@
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(0, 147, 208, 0.8);
             box-shadow: 0 0 15px rgba(0, 147, 208, 0.4);
-            -webkit-user-select: text; 
-            -ms-user-select: text; 
-            user-select: text;
+            -webkit-user-select: text !important; 
+            -ms-user-select: text !important; 
+            user-select: text !important;
         }
 
         .glass-input:disabled {
@@ -78,17 +74,8 @@
         .tab-inactive { background: transparent; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
         .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
 
-        body { 
-            -webkit-user-select: none; 
-            -ms-user-select: none; 
-            user-select: none; 
-        }
-        
-        input, textarea { 
-            -webkit-user-select: none; 
-            -ms-user-select: none; 
-            user-select: none; 
-        }
+        body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
     </style>
 </head>
 
@@ -105,6 +92,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- TAB 1: ĐĂNG KÝ CHỤP -->
+        <!-- ========================================== -->
         <div id="tab1" class="flex-1 flex flex-col relative fade-in overflow-y-auto pb-4">
             <div class="px-6 pb-4 pt-2 text-center flex flex-col items-center">
                 <div class="flex justify-center items-center space-x-4 mb-5 bg-white/70 backdrop-blur-xl py-2 px-6 rounded-full border border-white/50 shadow-[0_4px_15px_rgba(0,147,208,0.2)]">
@@ -144,6 +134,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mật Khẩu (6 Số) *</label>
                         <div class="relative z-20">
+                            <!-- Đã đồng bộ font chữ Mật khẩu giống hệt Họ Tên và MSSV -->
                             <input type="password" id="password" required placeholder="••••••" maxlength="6" minlength="6" inputmode="numeric" pattern="[0-9]*"
                                 class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold pr-12 outline-none">
                             <button type="button" id="btnTogglePwd" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#0093d0] transition-colors flex items-center justify-center">
@@ -168,7 +159,8 @@
                     </button>
                 </div>
 
-                <div id="regMessage" class="mt-4 text-center text-xs font-bold hidden p-3 rounded-lg text-red-400 bg-red-900/20 border border-red-500/20 relative z-20"></div>
+                <!-- Đồng bộ giao diện báo lỗi y hệt Modal -->
+                <div id="regMessage" class="mt-4 text-center text-xs font-bold hidden py-2 px-3 rounded-lg text-red-400 bg-red-900/20 border border-red-500/20 relative z-20"></div>
             </div>
 
             <!-- MÀN HÌNH THÀNH CÔNG -->
@@ -216,6 +208,7 @@
                         MSSV: <b id="confirmMSSV" class="text-[#0093d0] text-lg tracking-widest font-black">...</b>
                     </p>
                     
+                    <!-- Font chữ đỏ đã bỏ in nghiêng (italic) -->
                     <p class="text-xs text-red-400 font-bold mb-6 bg-red-900/20 py-2 px-3 rounded-lg border border-red-500/20">Cảnh báo: Sai MSSV sẽ làm mất quyền truy cập ảnh!</p>
                     
                     <div class="flex gap-3">
@@ -226,7 +219,9 @@
             </div>
         </div>
 
+        <!-- ========================================== -->
         <!-- TAB 2: NHẬN ẢNH -->
+        <!-- ========================================== -->
         <div id="tab2" class="flex-1 flex flex-col hidden fade-in overflow-y-hidden relative">
             <div id="folderView" class="p-6 flex-1 flex flex-col overflow-y-hidden">
                 <div class="mb-4 relative z-20 flex-shrink-0">
@@ -275,7 +270,7 @@
                     
                     <div class="relative mb-3">
                         <input type="password" id="unlockPassword" placeholder="Nhập mật khẩu 6 số" maxlength="6" inputmode="numeric" pattern="[0-9]*"
-                            class="w-full px-4 py-3.5 rounded-xl glass-input font-black tracking-widest text-center text-lg pr-12 outline-none">
+                            class="w-full px-4 py-3.5 rounded-xl glass-input font-bold pr-12 outline-none">
                         <button type="button" onclick="toggleUnlockPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#0093d0] transition-colors flex items-center justify-center">
                             <svg id="unlockEyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
@@ -289,6 +284,7 @@
         </div>
     </div>
 
+    <!-- JAVASCRIPT GIAO DIỆN & API -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbz_m-F4cTM-vvyyaUs9Yf0QNoPxpuAFZtNbUQyYEy-GsxfgngyJHb3Lf-m-OlggkC1b/exec";
         let currentTargetFolder = "";
@@ -503,7 +499,7 @@
         }
 
         async function verifyPassword() {
-            const pwd = document.getElementById('unlockPassword');
+            const pwd = document.getElementById('unlockPassword').value.trim();
             const errorTxt = document.getElementById('modalError');
             const btn = document.getElementById('btnUnlock');
             
