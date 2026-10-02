@@ -121,12 +121,18 @@
                 </h1>
             </div>
 
-            <div class="bg-black/30 border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2 flex-shrink-0">
-                <h2 class="text-[10px] font-bold text-[#0093d0] uppercase mb-1.5 tracking-widest flex items-center">
-                    <span class="w-2 h-2 rounded-full bg-[#0093d0] animate-pulse mr-2 shadow-[0_0_8px_#0093d0]"></span> LƯỢT CHỤP HIỆN TẠI
+            <!-- Khối trạng thái (Chỉ hiện ở Tab Đăng ký) -->
+            <div class="bg-black/30 border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2 flex-shrink-0 transition-colors duration-500" id="statusContainerBox">
+                <!-- Thêm id="statusTitleText" vào đây -->
+                <h2 class="text-[10px] font-bold text-[#0093d0] uppercase mb-1.5 tracking-widest flex items-center transition-colors duration-500" id="statusIndicatorText">
+                    <span class="w-2 h-2 rounded-full bg-[#0093d0] animate-pulse mr-2 shadow-[0_0_8px_#0093d0] transition-colors duration-500" id="statusDot"></span> 
+                    <span id="statusTitleText">LƯỢT CHỤP HIỆN TẠI</span>
                 </h2>
                 <div id="studentActiveContainer" class="flex flex-col items-center justify-center w-full">
-                    <span class="text-gray-400 italic font-medium text-xs tracking-normal">Trống - Chờ tín hiệu kết nối</span>
+                    <!-- Sẽ được điền bằng JavaScript -->
+                </div>
+                <!-- Dòng hiển thị trạng thái kép -->
+                <div id="globalStatusMessage" class="hidden mt-2 px-4 py-1.5 rounded-lg text-center text-[10px] font-bold uppercase tracking-wider">
                 </div>
             </div>
 
@@ -568,7 +574,81 @@
                 
                 if (response.status === 'success') {
                     const activeContainer = document.getElementById('studentActiveContainer');
+                    const statusMsg = document.getElementById('globalStatusMessage');
+                    const dot = document.getElementById('statusDot');
+                    const indicatorText = document.getElementById('statusIndicatorText');
+                    const box = document.getElementById('statusContainerBox');
+                    
+                    const btnSubmit = document.getElementById('btnMainSubmit');
+                    const btnText = document.getElementById('btnText');
+                    
+                    // ==========================================
+                    // 1. XỬ LÝ TRẠNG THÁI TỔNG (GLOBAL STATUS)
+                    // ==========================================
+                    let currentStatus = response.global_status || 'ready';
+                    let isFormLocked = false;
+                    let lockMessage = "ĐÃ ĐÓNG ĐĂNG KÝ";
+                    let subMessage = "";
+                    
+                    // Giữ nguyên thiết kế màu xanh dương nhạt / #0093d0 đặc trưng của web
+                    let colorClass = "text-[#0093d0]"; 
+                    let bgClass = "bg-[#0093d0]";
+                    let shadowClass = "shadow-[0_0_8px_#0093d0]";
+                    let boxBgClass = "bg-black/30";
+
+                    if (currentStatus === 'setup') {
+                        isFormLocked = true;
+                        subMessage = "Gian hàng SRC đang được setup. Hẹn gặp bạn tại CMCU NEXT FEST 2.0!";
+                    } else if (currentStatus === 'early') {
+                        subMessage = "Quầy sắp hoạt động! Bạn có thể đăng ký xếp hàng ngay từ bây giờ.";
+                    } else if (currentStatus === 'crowded') {
+                        subMessage = "Quầy đang hơi đông xíu. Bạn đi dạo một vòng rồi quay lại sau 15 phút nhé!";
+                    } else if (currentStatus === 'break') {
+                        isFormLocked = true;
+                        subMessage = "Quầy đang tạm nghỉ giải lao/thay thiết bị. Vui lòng quay lại sau ít phút.";
+                    } else if (currentStatus === 'closed') {
+                        isFormLocked = true;
+                        subMessage = "Photobooth đã đóng cửa đăng ký. Cảm ơn bạn đã tham gia cùng chúng mình!";
+                    } else {
+                        // Trạng thái 'ready' (Sẵn sàng)
+                        subMessage = "Quầy đang mở. Mời bạn đăng ký và chuẩn bị vào chụp!";
+                    }
+
+                    // --- CẬP NHẬT MÀU SẮC CHỈ BÁO (LUÔN GIỮ MÀU GỐC) ---
+                    dot.className = `w-2 h-2 rounded-full animate-pulse mr-2 transition-colors duration-500 ${bgClass} ${shadowClass}`;
+                    indicatorText.className = `text-[10px] font-bold uppercase mb-1.5 tracking-widest flex items-center transition-colors duration-500 ${colorClass}`;
+                    box.className = `border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2 flex-shrink-0 transition-colors duration-500 ${boxBgClass}`;
+
+                    // --- KHÓA / MỞ KHÓA NÚT ĐĂNG KÝ ---
+                    if (isFormLocked) {
+                        btnSubmit.onclick = null; // Vô hiệu hóa click
+                        btnSubmit.className = "w-full bg-gray-600/50 text-gray-400 font-black tracking-widest py-4 rounded-xl border border-white/10 mt-6 flex justify-center items-center relative z-20 cursor-not-allowed";
+                        btnText.textContent = lockMessage;
+                        // Khóa luôn ô nhập liệu để tránh sinh viên gõ mất công
+                        document.getElementById('fullName').disabled = true;
+                        document.getElementById('mssv').disabled = true;
+                        document.getElementById('password').disabled = true;
+                    } else {
+                        btnSubmit.onclick = showConfirmModal; // Phục hồi click
+                        btnSubmit.className = "w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(0,147,208,0.4)] border border-white/20 active:scale-95 transition-all mt-6 flex justify-center items-center relative z-20";
+                        btnText.textContent = "XÁC NHẬN ĐĂNG KÝ";
+                        // Mở lại ô nhập liệu (trừ khi đang ở màn hình Thành công)
+                        if(document.getElementById('successOverlay').classList.contains('hidden')){
+                            document.getElementById('fullName').disabled = false;
+                            document.getElementById('mssv').disabled = false;
+                            document.getElementById('password').disabled = false;
+                        }
+                    }
+
+                    // ==========================================
+                    // 2. XỬ LÝ HIỂN THỊ KÉP (NGƯỜI CHỤP + THÔNG BÁO)
+                    // ==========================================
+                    const titleText = document.getElementById('statusTitleText');
+
                     if (response.active) {
+                        // CÓ NGƯỜI ĐANG CHỤP: Luôn giữ tiêu đề này dù quầy đã đóng
+                        titleText.textContent = "LƯỢT CHỤP HIỆN TẠI";
+
                         const studentName = response.active.name;
                         const isVip = !/^[A-Za-z]{3}\d{6}$/.test(response.active.mssv);
 
@@ -580,10 +660,26 @@
                                 <span class="text-[10px] font-bold text-[#0093d0] uppercase tracking-widest mt-1">${response.active.mssv}</span>
                             `;
                         }
+                        
+                        if (currentStatus === 'ready') {
+                            statusMsg.className = "hidden"; 
+                        } else {
+                            statusMsg.textContent = subMessage;
+                            statusMsg.className = "mt-2 px-3 text-center text-[10px] font-medium tracking-wide text-gray-400/90 italic block w-full";
+                        }
+
                     } else {
-                        activeContainer.innerHTML = '<span class="text-gray-400/80 italic font-medium text-xs tracking-wide">Trống - Chờ tín hiệu kết nối</span>';
+                        // KHÔNG CÓ AI CHỤP: Đổi tiêu đề thành TRẠNG THÁI GIAN HÀNG
+                        titleText.textContent = "TRẠNG THÁI GIAN HÀNG";
+
+                        activeContainer.innerHTML = '';
+                        statusMsg.textContent = subMessage;
+                        statusMsg.className = "text-center px-4 text-[11px] font-medium tracking-wide leading-relaxed block text-gray-400/90 italic";
                     }
 
+                    // ==========================================
+                    // 3. XỬ LÝ KHO ẢNH (GIỮ NGUYÊN CŨ)
+                    // ==========================================
                     const newData = response.completed.reverse();
                     if(JSON.stringify(completedList) !== JSON.stringify(newData)) {
                         completedList = newData;
@@ -631,7 +727,7 @@
             tinyStars = [];
             largeStars = [];
 
-            // Đám mây ngân hà (Nebulae)
+            // 1. Đám mây ngân hà (Nebulae)
             const nebulaeData = [
                 { c1: 'rgba(75, 0, 130, 0.15)', c2: 'rgba(75, 0, 130, 0)' },
                 { c1: 'rgba(0, 147, 208, 0.1)', c2: 'rgba(0, 147, 208, 0)' },
@@ -648,11 +744,10 @@
                 });
             }
 
-            // Chấm sao nhỏ li ti (Tiny Stars) - Tăng mạnh số lượng và ép tụ vào giữa
+            // 2. Chấm sao nhỏ li ti (Tiny Stars)
             const tinyCount = window.innerWidth < 768 ? 400 : 900; 
             for(let i = 0; i < tinyCount; i++) {
                 let posX, posY;
-                // Lấy 50% số sao ép vào trung tâm màn hình (phía sau panel)
                 if (Math.random() < 0.5) {
                     posX = (width / 2) + (Math.random() - 0.5) * 500; 
                     posY = (height / 2) + (Math.random() - 0.5) * 900;
@@ -670,11 +765,12 @@
                 });
             }
 
-            // Ngôi sao lớn cố định (Large Fixed Stars) - Tăng mạnh số lượng và ép tụ vào giữa
+            // 3. Ngôi sao lớn cố định CÓ CHỐNG CHỒNG CHÉO
             const starCount = window.innerWidth < 768 ? 30 : 70; 
-            for(let i = 0; i < starCount; i++) {
+            let attempts = 0; // Giới hạn số lần thử tìm vị trí để tránh treo trình duyệt
+            
+            while (largeStars.length < starCount && attempts < 1000) {
                 let posX, posY;
-                // Lấy 60% số sao lớn ép vào trung tâm màn hình (phía sau panel)
                 if (Math.random() < 0.6) {
                     posX = (width / 2) + (Math.random() - 0.5) * 550; 
                     posY = (height / 2) + (Math.random() - 0.5) * 850;
@@ -683,14 +779,35 @@
                     posY = Math.random() * height;
                 }
 
-                largeStars.push({
-                    x: posX,
-                    y: posY,
-                    radius: Math.random() * 3 + 1.5,
-                    baseAlpha: Math.random() * 0.5 + 0.2, 
-                    currentAlpha: 0,
-                    glowTarget: 0
-                });
+                let starSize = Math.random() * (30 - 15) + 15;
+
+                // THUẬT TOÁN KIỂM TRA VA CHẠM (Collision Detection)
+                let isOverlapping = false;
+                for (let j = 0; j < largeStars.length; j++) {
+                    let existingStar = largeStars[j];
+                    let dx = posX - existingStar.x;
+                    let dy = posY - existingStar.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Nếu khoảng cách giữa 2 tâm nhỏ hơn tổng 2 tia cộng thêm 1 khoảng trống (padding) là 10px
+                    if (distance < (starSize + existingStar.size + 10)) {
+                        isOverlapping = true;
+                        break; // Dừng kiểm tra nếu đã phát hiện trùng
+                    }
+                }
+
+                // Nếu không bị chồng chéo, mới đẩy ngôi sao vào mảng
+                if (!isOverlapping) {
+                    largeStars.push({
+                        x: posX,
+                        y: posY,
+                        size: starSize,
+                        baseAlpha: Math.random() * 0.5 + 0.2, 
+                        currentAlpha: 0,
+                        glowTarget: 0
+                    });
+                }
+                attempts++;
             }
         }
 
@@ -798,28 +915,22 @@
                 ctx.save();
                 ctx.translate(s.x, s.y);
                 
-                // Vẽ tia sáng chéo của ngôi sao 4 cánh
+                // Vẽ tia sáng chéo của ngôi sao 4 cánh (Dùng s.size và BỎ LÕI TRẮNG)
                 ctx.beginPath();
-                ctx.moveTo(0, -s.radius * 3);
-                ctx.quadraticCurveTo(0, 0, s.radius * 3, 0);
-                ctx.quadraticCurveTo(0, 0, 0, s.radius * 3);
-                ctx.quadraticCurveTo(0, 0, -s.radius * 3, 0);
-                ctx.quadraticCurveTo(0, 0, 0, -s.radius * 3);
+                ctx.moveTo(0, -s.size);
+                ctx.quadraticCurveTo(0, 0, s.size, 0);
+                ctx.quadraticCurveTo(0, 0, 0, s.size);
+                ctx.quadraticCurveTo(0, 0, -s.size, 0);
+                ctx.quadraticCurveTo(0, 0, 0, -s.size);
                 ctx.fillStyle = `rgba(255, 220, 100, ${s.currentAlpha})`; // Màu vàng lấp lánh
-                ctx.fill();
-                
-                // Lõi trắng siêu sáng
-                ctx.beginPath();
-                ctx.arc(0, 0, s.radius * 0.5, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${s.currentAlpha + 0.2})`;
                 ctx.fill();
 
                 // Vầng hào quang (Glow) xung quanh sao
-                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, s.radius * 8);
+                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, s.size * 1.5);
                 g.addColorStop(0, `rgba(255, 220, 100, ${s.currentAlpha * 0.5})`);
                 g.addColorStop(1, 'rgba(255, 220, 100, 0)');
                 ctx.beginPath();
-                ctx.arc(0, 0, s.radius * 8, 0, Math.PI * 2);
+                ctx.arc(0, 0, s.size * 1.5, 0, Math.PI * 2);
                 ctx.fillStyle = g;
                 ctx.fill();
 

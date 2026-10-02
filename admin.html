@@ -33,12 +33,32 @@
 
     <div class="max-w-md mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden flex flex-col">
         
-        <!-- Header -->
-        <div class="bg-blue-600 text-white p-4 text-center relative shadow-md z-20">
-            <h1 class="text-2xl font-black tracking-wider uppercase">ĐIỀU PHỐI PHOTOBOOTH</h1>
-            <button onclick="fetchAllData()" class="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 p-2 rounded-full active:scale-95 transition-transform shadow-md">
+        <!-- Header & Modern Custom Dropdown -->
+        <div class="bg-blue-600 text-white p-4 text-center relative shadow-md z-30" id="adminHeader">
+            <h1 class="text-2xl font-black tracking-wider uppercase mb-3">ĐIỀU PHỐI PHOTOBOOTH</h1>
+            
+            <!-- Nút Refresh góc phải -->
+            <button onclick="fetchAllData()" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-2 rounded-full active:scale-95 transition-transform shadow-sm">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
+
+            <!-- Dropdown Trạng Thái Tùy Chỉnh (Modern UI) -->
+            <div class="relative w-full max-w-[280px] mx-auto text-left">
+                <button type="button" id="statusDropdownBtn" onclick="toggleStatusDropdown(event)" class="w-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-sm font-bold py-2.5 px-4 rounded-xl flex justify-between items-center transition-all shadow-inner active:scale-95">
+                    <span id="currentStatusText" class="flex items-center gap-2">🟢 Sẵn sàng đón khách</span>
+                    <svg id="statusDropdownIcon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                
+                <!-- Danh sách Menu (Đã xóa trạng thái tải ảnh) -->
+                <div id="statusOptions" class="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100 hidden flex-col overflow-hidden py-1.5 origin-top transition-all duration-200 z-50">
+                    <button onclick="selectGlobalStatus('ready', '🟢 Sẵn sàng đón khách')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors w-full text-left">🟢 Sẵn sàng đón khách</button>
+                    <button onclick="selectGlobalStatus('early', '🟡 Mở đăng ký sớm')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors w-full text-left">🟡 Mở đăng ký sớm</button>
+                    <button onclick="selectGlobalStatus('crowded', '🟠 Đang quá tải')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left">🟠 Đang quá tải</button>
+                    <button onclick="selectGlobalStatus('setup', '🔴 Đang Setup / Bảo trì')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Đang Setup / Bảo trì</button>
+                    <button onclick="selectGlobalStatus('break', '🔴 Tạm nghỉ / Đổi ca')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Tạm nghỉ / Đổi ca</button>
+                    <button onclick="selectGlobalStatus('closed', '🔴 Đã đóng quầy')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Đã đóng quầy</button>
+                </div>
+            </div>
         </div>
 
         <div class="p-4 bg-blue-50 border-b border-blue-100 z-10 shadow-sm">
@@ -168,6 +188,16 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
+                    // --- ĐỒNG BỘ TRẠNG THÁI HIỂN THỊ TRÊN NÚT ---
+                    if (result.global_status) {
+                        const statusMap = {
+                            'ready': '🟢 Sẵn sàng đón khách', 'early': '🟡 Mở đăng ký sớm',
+                            'crowded': '🟠 Đang quá tải', 'setup': '🔴 Đang Setup / Bảo trì',
+                            'break': '🔴 Tạm nghỉ / Đổi ca', 'closed': '🔴 Đã đóng quầy'
+                        };
+                        document.getElementById('currentStatusText').textContent = statusMap[result.global_status] || '🟢 Sẵn sàng đón khách';
+                    }
+
                     const newWaiting = result.data.filter(item => item.status === 'Waiting' || item.status === 'Active');
                     const newCompleted = result.data.filter(item => item.status === 'Completed').reverse();
                     
@@ -194,6 +224,69 @@
                 if (result.status === 'success') fetchAllData();
                 else alert("Lỗi: " + result.message);
             } catch (error) { alert("Lỗi mạng khi cập nhật!"); }
+        }
+
+        // ==========================================
+        // XỬ LÝ DROPDOWN TRẠNG THÁI HIỆN ĐẠI
+        // ==========================================
+        function toggleStatusDropdown(event) {
+            event.stopPropagation();
+            const options = document.getElementById('statusOptions');
+            const icon = document.getElementById('statusDropdownIcon');
+            options.classList.toggle('hidden');
+            options.classList.toggle('flex');
+            icon.classList.toggle('rotate-180');
+        }
+
+        async function selectGlobalStatus(statusCode, statusText) {
+            // 1. Đóng menu ngay lập tức
+            const options = document.getElementById('statusOptions');
+            options.classList.add('hidden'); options.classList.remove('flex');
+            document.getElementById('statusDropdownIcon').classList.remove('rotate-180');
+            
+            // 2. Gửi API với khối finally để chống kẹt Loading
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'update_global_status', status_code: statusCode }) 
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    document.getElementById('currentStatusText').textContent = statusText;
+                    await fetchAllData(true);
+                } else {
+                    alert("Lỗi cập nhật trạng thái: " + result.message);
+                }
+            } catch (error) { 
+                alert("Lỗi mạng khi cập nhật trạng thái quầy!"); 
+            } finally {
+                // CHỐNG KẸT LOADING: Luôn tắt dù thành công hay rớt mạng
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // Hàm gửi lệnh đổi trạng thái quầy lên Google Apps Script
+        async function changeGlobalStatus(statusCode) {
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'update_global_status', status_code: statusCode }) 
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    // Ép load lại data ngay lập tức (thêm await để đồng bộ)
+                    await fetchAllData(true);
+                } else {
+                    alert("Lỗi cập nhật trạng thái: " + result.message);
+                }
+            } catch (error) { 
+                alert("Lỗi mạng khi cập nhật trạng thái quầy!"); 
+            } finally {
+                // LUÔN TẮT LOADING SAU KHI HOÀN THÀNH (Dù thành công hay lỗi)
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
         }
 
         // ==========================================
@@ -517,6 +610,15 @@
             if (quickAddDropdown && !quickAddDropdown.classList.contains('hidden') && !e.target.closest('#btnQuickAdd')) {
                 quickAddDropdown.classList.add('hidden');
             }
+
+            // Đóng Dropdown Trạng thái
+            const statusOptions = document.getElementById('statusOptions');
+            if (statusOptions && !statusOptions.classList.contains('hidden') && !e.target.closest('#statusDropdownBtn')) {
+                statusOptions.classList.add('hidden');
+                statusOptions.classList.remove('flex');
+                document.getElementById('statusDropdownIcon').classList.remove('rotate-180');
+            }
+            
         });
 
         // Tìm kiếm
