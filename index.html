@@ -86,8 +86,20 @@
         .tab-inactive { background: transparent; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
         .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
 
-        body { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
-        input, textarea { -webkit-user-select: none; -ms-user-select: none; user-select: none; }
+        /* Khóa bôi đen, khóa chớp sáng (Highlight) và khóa Zoom (Touch-action) trên di động */
+        body { 
+            -webkit-user-select: none; -ms-user-select: none; user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        input, textarea { 
+            -webkit-user-select: none; -ms-user-select: none; user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        button, a, div[onclick] { 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+            touch-action: manipulation; /* Tắt Double-tap to zoom trên các nút */
+        }
 
         /* Hiệu ứng nước lỏng trôi trên chữ */
         .text-liquid {
