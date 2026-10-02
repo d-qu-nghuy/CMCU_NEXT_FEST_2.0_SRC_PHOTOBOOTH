@@ -90,6 +90,7 @@
         body { 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; 
             -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior: none; /* Thêm dòng này: Tắt hiệu ứng kéo dãn lòi viền nền */
         }
         input, textarea { 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; 
@@ -433,8 +434,9 @@
                     document.getElementById('successCardMSSV').textContent = mssv;
                     document.getElementById('successOverlay').classList.remove('hidden');
                     
-                    // Thêm dòng này để KHÓA CUỘN TRANG trên điện thoại
-                    document.body.classList.add('overflow-hidden');
+                    // Khóa cuộn Tab 1 trên điện thoại
+                    document.getElementById('tab1').classList.remove('overflow-y-auto');
+                    document.getElementById('tab1').classList.add('overflow-hidden');
                     
                     document.getElementById('fullName').disabled = true;
                     document.getElementById('mssv').disabled = true;
@@ -470,8 +472,9 @@
             document.getElementById('password').disabled = true;
             document.getElementById('btnTogglePwd').disabled = true;
 
-            // Thêm dòng này để MỞ KHÓA CUỘN TRANG (Vì phiếu đã thu nhỏ lại)
-            document.body.classList.remove('overflow-hidden');
+            // MỞ KHÓA CUỘN TRANG (Vì phiếu đã thu nhỏ lại)
+            document.getElementById('tab1').classList.remove('overflow-hidden');
+            document.getElementById('tab1').classList.add('overflow-y-auto');
         }
 
         function restoreSuccessOverlay() {
@@ -479,7 +482,8 @@
             document.getElementById('newSessionBlock').classList.add('hidden');
             
             // Khóa lại cuộn trang khi mở to phiếu lên
-            document.body.classList.add('overflow-hidden');
+            document.getElementById('tab1').classList.remove('overflow-y-auto');
+            document.getElementById('tab1').classList.add('overflow-hidden');
         }
 
         function resetRegisterForm() {
@@ -500,8 +504,9 @@
             document.getElementById('newSessionBlock').classList.add('hidden');
             document.getElementById('btnMainSubmit').classList.remove('hidden');
 
-            // Thêm dòng này để MỞ KHÓA CUỘN TRANG khi đăng ký mới
-            document.body.classList.remove('overflow-hidden');
+            // MỞ KHÓA CUỘN TRANG khi đăng ký mới
+            document.getElementById('tab1').classList.remove('overflow-hidden');
+            document.getElementById('tab1').classList.add('overflow-y-auto');
         }
 
         // ==========================================
@@ -552,8 +557,9 @@
                 const demoBadge = isDemo ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-[#004a8c]/90 to-[#0093d0]/90 border-b border-l border-white/20 text-white text-[8px] font-black px-2.5 py-0.5 rounded-bl-xl rounded-tr-[15px] z-10 shadow-[0_0_10px_rgba(0,147,208,0.3)] uppercase tracking-widest">Mẫu</div>` : '';
                 const passPill = isDemo ? `<div class="mt-1.5 bg-white/10 px-2 py-0.5 rounded-full border border-white/20 text-[8px] font-bold text-gray-300 tracking-widest uppercase shadow-inner">PASS: 123456</div>` : '';
 
+                // Đã sửa 'ggrid' thành 'grid'
                 grid.innerHTML += `
-                    <div onclick="openPasswordModal('${mssv}', ${isVip}, ${isDemo})" class="relative bg-white/5 hover:bg-white/10 py-5 px-1.5 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(0,147,208,0.3)] group overflow-hidden">
+                    <div onclick="openPasswordModal('${mssv}', ${isVip}, ${isDemo})" class="relative h-[135px] bg-white/5 hover:bg-white/10 py-5 px-1.5 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(0,147,208,0.3)] group overflow-hidden">
                         ${demoBadge}
                         <svg class="w-10 h-10 ${iconColor} mb-2 group-hover:scale-110 transition-transform duration-300 drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
                         
@@ -1135,7 +1141,31 @@
             }
             requestAnimationFrame(animate);
         }
-        animate();
+        animate(); // (Dòng code cũ hiện tại của bạn)
+
+        // ==========================================
+        // KHÓA TRIỆT ĐỂ ZOOM VÀ PINCH-TO-ZOOM TRÊN MOBILE
+        // ==========================================
+        let lastTouchTime = 0;
+        
+        // 1. Chống zoom bằng 2 ngón tay (Pinch-to-zoom)
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault(); 
+            }
+        }, { passive: false });
+
+        // 2. Chống nhấp đúp để zoom (Smart Zoom) vào văn bản
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) { // Nếu 2 lần chạm cách nhau dưới 300 mili-giây
+                // Bỏ qua các ô nhập liệu để người dùng vẫn gõ phím tốc độ cao bình thường
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+                    event.preventDefault(); // Hủy bỏ hành động zoom của trình duyệt
+                }
+            }
+            lastTouchTime = now;
+        }, { passive: false });
     </script>
 </body>
 </html>
