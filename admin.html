@@ -618,7 +618,7 @@
                 statusOptions.classList.remove('flex');
                 document.getElementById('statusDropdownIcon').classList.remove('rotate-180');
             }
-            
+
         });
 
         // Tìm kiếm
@@ -646,6 +646,16 @@
             
             document.getElementById('quickAddLabel').innerHTML = isStudent ? 'Nhập MSSV đang đợi (Bắt buộc đúng)' : 'Tên Khách VIP';
             document.getElementById('quickAddInput').placeholder = isStudent ? 'VD: BEC250024' : 'VD: Thầy Hoàng';
+
+            // Tháo gỡ ràng buộc nhập liệu: Sinh viên thì ép viết hoa/không dấu cách, VIP thì thả ga
+            const inputFieldEl = document.getElementById('quickAddInput');
+            if (isStudent) {
+                inputFieldEl.setAttribute('oninput', "this.value = this.value.toUpperCase().replace(/\\s+/g, '')");
+                inputFieldEl.classList.add('uppercase'); // Bật lại ép CSS in hoa cho sinh viên
+            } else {
+                inputFieldEl.removeAttribute('oninput'); // VIP được nhập tự do có dấu cách
+                inputFieldEl.classList.remove('uppercase'); // Tắt ép CSS in hoa, cho phép chữ thường
+            }
             
             document.getElementById('btnQuickAddSubmit').innerHTML = isStudent ? 'TẠO THƯ MỤC NGAY' : 'TẠO NHANH & XẾP HÀNG';
             document.getElementById('btnQuickAddSubmit').className = isStudent 
@@ -707,9 +717,15 @@
 
         document.getElementById('quickAddForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const inputVal = document.getElementById('quickAddInput').value.trim().replace(/\s+/g, '');
-            const pass = document.getElementById('quickAddPassword').value;
             const type = document.getElementById('quickAddTypeVal').value;
+            
+            // CHỈ ép xóa dấu cách nếu là Sinh viên. Khách VIP thì giữ nguyên giá trị người dùng gõ
+            let inputVal = document.getElementById('quickAddInput').value.trim();
+            if (type === 'student') {
+                inputVal = inputVal.replace(/\s+/g, '');
+            }
+            
+            const pass = document.getElementById('quickAddPassword').value;
             const btn = document.getElementById('btnQuickAddSubmit');
             const err = document.getElementById('quickAddError');
 

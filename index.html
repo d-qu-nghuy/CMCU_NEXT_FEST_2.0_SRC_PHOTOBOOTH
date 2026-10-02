@@ -60,15 +60,27 @@
         }
 
         .glass-input:disabled {
-            background: rgba(0, 0, 0, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            border-color: transparent;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            opacity: 1; /* Chống làm mờ mặc định của iOS/Android */
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.6); /* Ép màu chữ */
             pointer-events: none;
             -webkit-user-select: none !important;
             user-select: none !important;
         }
 
-        .glass-input::placeholder { color: rgba(156, 163, 175, 0.6); font-weight: 500; }
+        /* Khóa cứng màu placeholder không bị ảnh hưởng bởi trạng thái form */
+        .glass-input::-webkit-input-placeholder { 
+            color: rgba(156, 163, 175, 0.6) !important; 
+            -webkit-text-fill-color: rgba(156, 163, 175, 0.6) !important; 
+            font-weight: 500; 
+        }
+        .glass-input::placeholder { 
+            color: rgba(156, 163, 175, 0.6) !important; 
+            -webkit-text-fill-color: rgba(156, 163, 175, 0.6) !important; 
+            font-weight: 500; 
+        }
 
         .tab-active { background: rgba(255, 255, 255, 0.15); color: #fff; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .tab-inactive { background: transparent; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
@@ -141,27 +153,28 @@
             </div>
 
             <div class="p-6 flex-1 flex flex-col relative">
-                <form id="registerForm" class="space-y-5 flex-1 relative">
+                <!-- Thêm autocomplete="off" vào form -->
+                <form id="registerForm" class="space-y-5 flex-1 relative" autocomplete="off">
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Họ và Tên *</label>
-                        <!-- Đã thêm disabled -->
-                        <input type="text" id="fullName" required placeholder="VD: Đỗ Quang Huy" disabled
-                            class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold outline-none relative z-20 disabled:opacity-50">
+                        <!-- Đã xóa disabled:opacity-50 -->
+                        <input type="text" id="fullName" required placeholder="VD: Đỗ Quang Huy" disabled autocomplete="off"
+                            class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold outline-none relative z-20">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mã Số Sinh Viên *</label>
-                        <!-- Đã thêm disabled -->
-                        <input type="text" id="mssv" required placeholder="VD: BEC250024" disabled
-                            class="w-full px-4 py-3.5 rounded-xl glass-input uppercase transition-all font-bold outline-none relative z-20 disabled:opacity-50">
+                        <!-- Đã xóa disabled:opacity-50 -->
+                        <input type="text" id="mssv" required placeholder="VD: BEC250024" disabled autocomplete="off"
+                            class="w-full px-4 py-3.5 rounded-xl glass-input uppercase transition-all font-bold outline-none relative z-20">
                     </div>
                     
                     <div>
                         <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mật Khẩu (6 Số) *</label>
                         <div class="relative z-20">
-                            <!-- Đã thêm disabled -->
+                            <!-- Đã xóa disabled:opacity-50 -->
                             <input type="password" id="password" required placeholder="••••••" maxlength="6" minlength="6" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" disabled
-                                class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold pr-12 outline-none disabled:opacity-50">
-                            <!-- Đã thêm disabled cho nút mắt -->
+                                class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold pr-12 outline-none">
+                            <!-- Nút mắt giữ nguyên để tạo hiệu ứng -->
                             <button type="button" id="btnTogglePwd" onclick="togglePassword()" disabled class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#0093d0] transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                                 <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                             </button>
@@ -290,7 +303,7 @@
                     </button>
                     
                     <h3 class="text-xl font-black text-center mb-1 text-white tracking-widest uppercase">MỞ KHÓA THƯ MỤC</h3>
-                    <p class="text-center text-xs font-bold tracking-widest text-[#0093d0] uppercase mb-6" id="modalTargetFolder">MSSV: ---</p>
+                    <p class="text-center text-xs font-bold tracking-widest text-[#0093d0] mb-6" id="modalTargetFolder">MSSV: ---</p>
                     
                     <div class="relative mb-3">
                         <input type="password" id="unlockPassword" placeholder="Nhập mật khẩu 6 số" maxlength="6" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
@@ -408,6 +421,9 @@
                     document.getElementById('successCardMSSV').textContent = mssv;
                     document.getElementById('successOverlay').classList.remove('hidden');
                     
+                    // Thêm dòng này để KHÓA CUỘN TRANG trên điện thoại
+                    document.body.classList.add('overflow-hidden');
+                    
                     document.getElementById('fullName').disabled = true;
                     document.getElementById('mssv').disabled = true;
                     document.getElementById('password').disabled = true;
@@ -433,13 +449,25 @@
 
         function minimizeSuccess() {
             document.getElementById('successOverlay').classList.add('hidden');
-            document.getElementById('btnMainSubmit').classList.add('hidden'); 
-            document.getElementById('newSessionBlock').classList.remove('hidden'); 
+            document.getElementById('btnMainSubmit').classList.add('hidden');
+            document.getElementById('newSessionBlock').classList.remove('hidden');
+
+            // Ép khóa toàn bộ Input khi mở lại phiếu để chỉ cho xem, không cho sửa
+            document.getElementById('fullName').disabled = true;
+            document.getElementById('mssv').disabled = true;
+            document.getElementById('password').disabled = true;
+            document.getElementById('btnTogglePwd').disabled = true;
+
+            // Thêm dòng này để MỞ KHÓA CUỘN TRANG (Vì phiếu đã thu nhỏ lại)
+            document.body.classList.remove('overflow-hidden');
         }
 
         function restoreSuccessOverlay() {
             document.getElementById('successOverlay').classList.remove('hidden');
             document.getElementById('newSessionBlock').classList.add('hidden');
+            
+            // Khóa lại cuộn trang khi mở to phiếu lên
+            document.body.classList.add('overflow-hidden');
         }
 
         function resetRegisterForm() {
@@ -447,10 +475,10 @@
             document.getElementById('mssv').disabled = false;
             document.getElementById('password').disabled = false;
             document.getElementById('btnTogglePwd').disabled = false;
-            
+
             document.getElementById('fullName').value = '';
             document.getElementById('mssv').value = '';
-            
+
             const pwd = document.getElementById('password');
             pwd.value = '';
             pwd.type = 'password';
@@ -459,6 +487,9 @@
             document.getElementById('successOverlay').classList.add('hidden');
             document.getElementById('newSessionBlock').classList.add('hidden');
             document.getElementById('btnMainSubmit').classList.remove('hidden');
+
+            // Thêm dòng này để MỞ KHÓA CUỘN TRANG khi đăng ký mới
+            document.body.classList.remove('overflow-hidden');
         }
 
         // ==========================================
@@ -505,7 +536,8 @@
                     `<div class="mt-1 h-[15px]"></div>` : 
                     `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-1 mt-1 uppercase tracking-widest" title="${name}">${name}</span>`;
 
-                const demoBadge = isDemo ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg rounded-tr-[15px] z-10 shadow-sm uppercase tracking-widest">Mẫu</div>` : '';
+                // Đổi thiết kế Ruy-băng "Mẫu" sang phong cách Kính mờ Xanh Không Gian
+                const demoBadge = isDemo ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-[#004a8c]/90 to-[#0093d0]/90 backdrop-blur-md border-b border-l border-white/20 text-white text-[8px] font-black px-2.5 py-0.5 rounded-bl-xl rounded-tr-[15px] z-10 shadow-[0_0_10px_rgba(0,147,208,0.3)] uppercase tracking-widest">Mẫu</div>` : '';
                 const passPill = isDemo ? `<div class="mt-1.5 bg-white/10 px-2 py-0.5 rounded-full border border-white/20 text-[8px] font-bold text-gray-300 tracking-widest uppercase shadow-inner">PASS: 123456</div>` : '';
 
                 grid.innerHTML += `
@@ -548,7 +580,15 @@
             isCurrentDemo = isDemo; // Lưu lại xem thư mục đang mở có phải là Demo không
             
             if (typeof isVip !== 'boolean') isVip = !/^[A-Z]{3}\d{6}$/i.test(folderMssv);
-            document.getElementById('modalTargetFolder').textContent = isVip ? `THƯ MỤC: ${folderMssv}` : `MSSV: ${folderMssv}`;
+            
+            // --- XỬ LÝ ẢO THUẬT TÊN HIỂN THỊ TRÊN MODAL ---
+            let displayMssv = folderMssv;
+            if (isDemo && isVip) {
+                displayMssv = "[SRC] CLB SINH VIÊN NCKH"; // Đổi tên riêng cho thư mục mẫu
+            }
+            
+            // Cập nhật tên hiển thị lên bảng (dùng displayMssv thay vì folderMssv gốc)
+            document.getElementById('modalTargetFolder').textContent = isVip ? `THƯ MỤC: ${displayMssv}` : `MSSV: ${displayMssv}`;
             
             const pwd = document.getElementById('unlockPassword');
             pwd.value = '';
@@ -626,17 +666,13 @@
                     document.getElementById('driveLinkBtn').href = result.folderUrl;
                     document.getElementById('galleryView').classList.remove('hidden');
 
-                } else if (result.status === 'pending') {
-                    errorTxt.textContent = "Đang đồng bộ dữ liệu... Giữ máy!";
-                    errorTxt.className = "text-[#0093d0] text-xs font-bold text-center h-4 mb-4 animate-pulse drop-shadow-md";
-                    unlockTimeout = setTimeout(verifyPassword, 2500); 
-                    return; 
                 } else {
-                    errorTxt.textContent = result.message; 
+                    // Xử lý dứt điểm: Không bắt chờ pending nữa, báo lỗi ngay lập tức nếu chưa đồng bộ kịp
+                    errorTxt.textContent = result.message || "Thư mục đang được khởi tạo, vui lòng thử lại sau ít phút!";
                     errorTxt.className = "text-red-400 text-xs font-bold text-center h-4 mb-4 drop-shadow-md";
                 }
             } catch (error) {
-                errorTxt.textContent = "Lỗi kết nối vệ tinh.";
+                errorTxt.textContent = "Lỗi kết nối mạng, vui lòng thử lại.";
                 errorTxt.className = "text-red-400 text-xs font-bold text-center h-4 mb-4 drop-shadow-md";
             }
             btn.innerHTML = "MỞ KHÓA";
@@ -717,16 +753,24 @@
                         document.getElementById('password').disabled = true;
                         document.getElementById('btnTogglePwd').disabled = true;
                     } else {
-                        btnSubmit.onclick = showConfirmModal;
-                        btnSubmit.disabled = false;
-                        btnSubmit.className = "w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(0,147,208,0.4)] border border-white/20 active:scale-95 transition-all mt-6 flex justify-center items-center relative z-20";
-                        btnText.textContent = "XÁC NHẬN ĐĂNG KÝ";
+                        // Kiểm tra xem có đang ở chế độ xem lại phiếu không
+                        const isSuccessHidden = document.getElementById('successOverlay').classList.contains('hidden');
+                        const isSessionBlockHidden = document.getElementById('newSessionBlock').classList.contains('hidden');
                         
-                        if(document.getElementById('successOverlay').classList.contains('hidden')){
+                        if (isSuccessHidden && isSessionBlockHidden) {
+                            // CHỈ KHI CHƯA ĐĂNG KÝ: Phục hồi nút Submit và mở khóa Input
+                            btnSubmit.onclick = showConfirmModal;
+                            btnSubmit.disabled = false;
+                            btnSubmit.className = "w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(0,147,208,0.4)] border border-white/20 active:scale-95 transition-all mt-6 flex justify-center items-center relative z-20";
+                            btnText.textContent = "XÁC NHẬN ĐĂNG KÝ";
+                            
                             document.getElementById('fullName').disabled = false;
                             document.getElementById('mssv').disabled = false;
                             document.getElementById('password').disabled = false;
                             document.getElementById('btnTogglePwd').disabled = false;
+                        } else {
+                            // NẾU ĐANG Ở CHẾ ĐỘ "MỞ LẠI PHIẾU": Bắt buộc giấu nút Submit đi
+                            btnSubmit.classList.add('hidden');
                         }
                     }
 
@@ -741,7 +785,8 @@
                         const isVip = !/^[A-Za-z]{3}\d{6}$/.test(response.active.mssv);
 
                         if (isVip) {
-                            activeContainer.innerHTML = `<span class="text-sm font-black text-white uppercase tracking-widest truncate w-full text-center px-4 mt-1 drop-shadow-md">${response.active.mssv}</span>`;
+                            // Đã xóa class 'uppercase' để giữ nguyên định dạng gõ của Admin
+                            activeContainer.innerHTML = `<span class="text-sm font-black text-white tracking-widest truncate w-full text-center px-4 mt-1 drop-shadow-md">${response.active.mssv}</span>`;
                         } else {
                             activeContainer.innerHTML = `
                                 <span class="text-[13px] font-black text-white uppercase tracking-widest truncate w-full text-center px-4 drop-shadow-md">${studentName}</span>
@@ -834,8 +879,8 @@
                 });
             }
 
-            // 2. Chấm sao nhỏ li ti (Tiny Stars)
-            const tinyCount = window.innerWidth < 768 ? 400 : 900; 
+            // 2. Chấm sao nhỏ li ti (Tiny Stars) - Đã tăng mạnh số lượng sao
+            const tinyCount = window.innerWidth < 768 ? 800 : 2500;
             for(let i = 0; i < tinyCount; i++) {
                 let posX, posY;
                 if (Math.random() < 0.5) {
