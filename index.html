@@ -537,11 +537,11 @@
                     `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-1 mt-1 uppercase tracking-widest" title="${name}">${name}</span>`;
 
                 // Đổi thiết kế Ruy-băng "Mẫu" sang phong cách Kính mờ Xanh Không Gian
-                const demoBadge = isDemo ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-[#004a8c]/90 to-[#0093d0]/90 backdrop-blur-md border-b border-l border-white/20 text-white text-[8px] font-black px-2.5 py-0.5 rounded-bl-xl rounded-tr-[15px] z-10 shadow-[0_0_10px_rgba(0,147,208,0.3)] uppercase tracking-widest">Mẫu</div>` : '';
+                const demoBadge = isDemo ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-[#004a8c]/90 to-[#0093d0]/90 border-b border-l border-white/20 text-white text-[8px] font-black px-2.5 py-0.5 rounded-bl-xl rounded-tr-[15px] z-10 shadow-[0_0_10px_rgba(0,147,208,0.3)] uppercase tracking-widest">Mẫu</div>` : '';
                 const passPill = isDemo ? `<div class="mt-1.5 bg-white/10 px-2 py-0.5 rounded-full border border-white/20 text-[8px] font-bold text-gray-300 tracking-widest uppercase shadow-inner">PASS: 123456</div>` : '';
 
                 grid.innerHTML += `
-                    <div onclick="openPasswordModal('${mssv}', ${isVip}, ${isDemo})" class="relative bg-white/5 hover:bg-white/10 py-5 px-1.5 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(0,147,208,0.3)] group overflow-hidden">
+                    <div onclick="openPasswordModal('${mssv}', ${isVip}, ${isDemo})" class="relative bg-white/5 hover:bg-white/10 py-5 px-1.5 rounded-2xl border border-white/10 flex flex-col items-center justify-center active:scale-95 transition duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(0,147,208,0.3)] group overflow-hidden">
                         ${demoBadge}
                         <svg class="w-10 h-10 ${iconColor} mb-2 group-hover:scale-110 transition-transform duration-300 drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
                         
