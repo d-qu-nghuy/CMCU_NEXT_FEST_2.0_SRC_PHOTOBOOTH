@@ -991,7 +991,10 @@
         let width, height;
         let particles = [];
         
-        const particleCount = window.innerWidth < 768 ? 30 : 280;
+        // Biến nhận diện thiết bị di động chuẩn xác (bất chấp xoay ngang dọc)
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || Math.min(window.innerWidth, window.innerHeight) < 768;
+        
+        const particleCount = isMobileDevice ? 30 : 280;
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -1026,7 +1029,7 @@
             }
 
             // 2. Chấm sao nhỏ li ti (Tiny Stars) - Đã tăng mạnh số lượng sao
-            const tinyCount = window.innerWidth < 768 ? 200 : 2500;
+            const tinyCount = isMobileDevice ? 200 : 2500;
             for(let i = 0; i < tinyCount; i++) {
                 let posX, posY;
                 if (Math.random() < 0.5) {
@@ -1047,7 +1050,7 @@
             }
 
             // 3. Ngôi sao lớn cố định CÓ CHỐNG CHỒNG CHÉO
-            const starCount = window.innerWidth < 768 ? 20 : 70; 
+            const starCount = isMobileDevice ? 20 : 70;
             let attempts = 0; // Giới hạn số lần thử tìm vị trí để tránh treo trình duyệt
             
             while (largeStars.length < starCount && attempts < 1000) {
@@ -1222,7 +1225,7 @@
             particles.forEach(p => { p.update(); p.draw(); });
 
             // THUẬT TOÁN CHỐNG LAG: Chỉ tính toán và vẽ dây nối (Plexus) trên Máy tính
-            if (window.innerWidth >= 768) {
+            if (!isMobileDevice) {
                 for (let i = 0; i < particles.length; i++) {
                     for (let j = i + 1; j < particles.length; j++) {
                         let dx = particles[i].x - particles[j].x;
