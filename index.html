@@ -991,7 +991,7 @@
         let width, height;
         let particles = [];
         
-        const particleCount = window.innerWidth < 768 ? 120 : 280;
+        const particleCount = window.innerWidth < 768 ? 30 : 280;
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -1026,7 +1026,7 @@
             }
 
             // 2. Chấm sao nhỏ li ti (Tiny Stars) - Đã tăng mạnh số lượng sao
-            const tinyCount = window.innerWidth < 768 ? 800 : 2500;
+            const tinyCount = window.innerWidth < 768 ? 200 : 2500;
             for(let i = 0; i < tinyCount; i++) {
                 let posX, posY;
                 if (Math.random() < 0.5) {
@@ -1047,7 +1047,7 @@
             }
 
             // 3. Ngôi sao lớn cố định CÓ CHỐNG CHỒNG CHÉO
-            const starCount = window.innerWidth < 768 ? 30 : 70; 
+            const starCount = window.innerWidth < 768 ? 20 : 70; 
             let attempts = 0; // Giới hạn số lần thử tìm vị trí để tránh treo trình duyệt
             
             while (largeStars.length < starCount && attempts < 1000) {
@@ -1221,37 +1221,38 @@
             // 4. VẼ HẠT VÀ MẠNG LƯỚI PLEXUS
             particles.forEach(p => { p.update(); p.draw(); });
 
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < connectionDistance) {
-                        ctx.beginPath();
-                        const strokeColor = (particles[i].isPurple || particles[j].isPurple) 
-                            ? `rgba(138, 92, 232, ${(1 - distance / connectionDistance) * 0.6})` 
-                            : `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`;
-                        
-                        ctx.strokeStyle = strokeColor; 
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
+            // THUẬT TOÁN CHỐNG LAG: Chỉ tính toán và vẽ dây nối (Plexus) trên Máy tính
+            if (window.innerWidth >= 768) {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < connectionDistance) {
+                            ctx.beginPath();
+                            const strokeColor = (particles[i].isPurple || particles[j].isPurple) 
+                                ? `rgba(138, 92, 232, ${(1 - distance / connectionDistance) * 0.6})` 
+                                : `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`;
+                            
+                            ctx.strokeStyle = strokeColor; 
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
                     }
-                }
-                if (mouse.isActive) {
-                    let dxMouse = particles[i].x - mouse.x;
-                    let dyMouse = particles[i].y - mouse.y;
-                    let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                    if (distMouse < mouseConnectionDistance) {
-                        ctx.beginPath();
-                        // Tăng độ sáng của tia nối chuột lên một chút để thêm phần nổi bật
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
-                        ctx.lineWidth = 1.2;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(mouse.x, mouse.y);
-                        ctx.stroke();
-                        // ĐÃ XÓA 2 DÒNG LỰC HÚT VẬT LÝ Ở ĐÂY ĐỂ GIỮ NỀN LUÔN CÂN BẰNG
+                    if (mouse.isActive) {
+                        let dxMouse = particles[i].x - mouse.x;
+                        let dyMouse = particles[i].y - mouse.y;
+                        let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+                        if (distMouse < mouseConnectionDistance) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
+                            ctx.lineWidth = 1.2;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            ctx.stroke();
+                        }
                     }
                 }
             }
