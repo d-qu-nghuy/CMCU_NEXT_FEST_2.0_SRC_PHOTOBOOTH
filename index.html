@@ -150,44 +150,52 @@
 
     <!-- GIAO DIỆN SPOTIFY PLAYER (Hiện khi click đĩa nhạc) -->
     <div id="spotifyModal" onclick="closeSpotifyModal()" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 fade-in cursor-pointer">
-        <!-- Khung Player (Click vào đây không bị đóng modal) -->
-        <div onclick="event.stopPropagation()" class="bg-[#181818] w-full max-w-[320px] rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 flex flex-col cursor-default">
+        <!-- Khung Player Kính mờ (Glassmorphism) -->
+        <div onclick="event.stopPropagation()" class="w-full max-w-[320px] bg-[#0a192f]/90 backdrop-blur-2xl rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,147,208,0.3)] border border-white/15 flex flex-col cursor-default relative overflow-hidden">
             
-            <!-- Nút vuốt đóng -->
-            <button onclick="closeSpotifyModal()" class="self-end text-gray-400 hover:text-white mb-3 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <!-- Hiệu ứng ánh sáng nền góc -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+
+            <!-- Nút đóng góc phải -->
+            <button onclick="closeSpotifyModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 rounded-full p-1.5 transition-colors z-10 active:scale-90">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
-            <!-- Ảnh cover nguyên bản (Không khoét, không xoay) -->
-            <div class="w-full aspect-square bg-gray-800 rounded-lg shadow-2xl overflow-hidden mb-6">
-                <img src="png/dia-nhac.png" alt="Cover" class="w-full h-full object-cover">
+            <!-- Ảnh cover nguyên bản -->
+            <div class="w-full aspect-square bg-black/50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden mb-5 mt-4 relative z-10 border border-white/5">
+                <img src="png/dia-nhac.png" alt="Cover" class="w-full h-full object-cover pointer-events-none">
             </div>
 
             <!-- Tên bài hát & Ca sĩ -->
-            <div class="flex flex-col mb-5">
-                <h3 class="text-white font-bold text-xl truncate">All The Stars</h3>
-                <p class="text-gray-400 text-sm font-medium truncate mt-0.5">Kendrick Lamar, SZA</p>
+            <div class="flex flex-col mb-5 text-center relative z-10">
+                <h3 class="text-white font-black text-xl tracking-wide truncate">All The Stars</h3>
+                <p class="text-[#0093d0] text-xs font-bold tracking-widest uppercase mt-1 truncate">Kendrick Lamar, SZA</p>
             </div>
 
-            <!-- Thanh tiến trình (Progress Bar) -->
-            <div class="w-full flex flex-col mb-6">
-                <div class="w-full h-1.5 bg-gray-600 rounded-full overflow-hidden cursor-pointer relative" id="progressBarContainer" onclick="seekMusic(event)">
-                    <div id="progressBar" class="h-full bg-white w-0 relative rounded-full"></div>
+            <!-- Thanh tiến trình (Đã khóa click, làm mỏng và nhạt màu) -->
+            <div class="w-full flex flex-col mb-6 relative z-10">
+                <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden pointer-events-none">
+                    <div id="progressBar" class="h-full bg-gray-400 w-0 relative rounded-full opacity-80"></div>
                 </div>
-                <div class="flex justify-between text-gray-400 text-[10px] font-bold mt-2">
+                <div class="flex justify-between text-gray-500 text-[10px] font-bold mt-2 tracking-widest">
                     <span id="currentTimeDisplay">0:00</span>
                     <span id="durationDisplay">0:00</span>
                 </div>
             </div>
 
-            <!-- Nút điều khiển Spotify -->
-            <div class="flex justify-center items-center gap-8 mb-2">
-                <button onclick="restartMusic(event)" class="text-gray-400 hover:text-white transition-colors active:scale-90">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <!-- Nút điều khiển dạng hàng ngang -->
+            <div class="flex flex-col gap-3 relative z-10">
+                <!-- Nút Phát / Tạm dừng -->
+                <button type="button" onclick="toggleMusic(event)" class="w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-[0_0_15px_rgba(0,147,208,0.4)] border border-white/20">
+                    <svg id="spPlayIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                    <svg id="spPauseIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
+                    <span id="spPlayPauseText" class="text-[11px] font-black uppercase tracking-widest">TIẾP TỤC PHÁT</span>
                 </button>
-                <button onclick="toggleMusic(event)" class="w-14 h-14 bg-white hover:bg-gray-200 rounded-full flex justify-center items-center text-black hover:scale-105 active:scale-95 transition-all">
-                    <svg id="spPlayIcon" class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
-                    <svg id="spPauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
+                
+                <!-- Nút Phát từ đầu -->
+                <button type="button" onclick="restartMusic(event)" class="w-full bg-white/5 hover:bg-white/10 text-gray-300 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 border border-white/10">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span class="text-[11px] font-black uppercase tracking-widest">PHÁT TỪ ĐẦU</span>
                 </button>
             </div>
         </div>
@@ -274,7 +282,7 @@
                     </button>
                 </form>
 
-                <div id="newSessionBlock" class="hidden absolute bottom-0 left-0 right-0 z-20 flex gap-3 px-6 pb-6 pt-12 bg-gradient-to-t from-[#031429] to-transparent pointer-events-auto">
+                <div id="newSessionBlock" class="hidden z-20 flex gap-3 pointer-events-auto w-full mt-6">
                     <button type="button" onclick="restoreSuccessOverlay()" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3.5 rounded-xl border border-white/10 backdrop-blur-md active:scale-95 transition-all flex flex-col justify-center items-center shadow-lg">
                         <svg class="w-5 h-5 mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
                         <span class="text-[10px] tracking-widest uppercase">Mở lại phiếu</span>
@@ -537,7 +545,6 @@
 
         function minimizeSuccess() {
             document.getElementById('successOverlay').classList.add('hidden');
-            document.getElementById('btnMainSubmit').classList.add('hidden');
             document.getElementById('newSessionBlock').classList.remove('hidden');
 
             // Ép khóa toàn bộ Input khi mở lại phiếu để chỉ cho xem, không cho sửa
@@ -545,6 +552,9 @@
             document.getElementById('mssv').disabled = true;
             document.getElementById('password').disabled = true;
             document.getElementById('btnTogglePwd').disabled = true;
+
+            // Luôn ẩn nút submit chính khi ở chế độ "Mở lại phiếu" để tránh xung đột UI
+            document.getElementById('btnMainSubmit').classList.add('hidden');
 
             // MỞ KHÓA CUỘN TRANG (Vì phiếu đã thu nhỏ lại)
             document.getElementById('tab1').classList.remove('overflow-hidden');
@@ -561,11 +571,8 @@
         }
 
         function resetRegisterForm() {
-            document.getElementById('fullName').disabled = false;
-            document.getElementById('mssv').disabled = false;
-            document.getElementById('password').disabled = false;
-            document.getElementById('btnTogglePwd').disabled = false;
-
+            // Không tự động mở khóa input ở đây nữa. Việc mở khóa sẽ do syncPublicData quyết định
+            
             document.getElementById('fullName').value = '';
             document.getElementById('mssv').value = '';
 
@@ -576,11 +583,16 @@
 
             document.getElementById('successOverlay').classList.add('hidden');
             document.getElementById('newSessionBlock').classList.add('hidden');
+            
+            // Hiện lại nút submit, nhưng chưa gán thuộc tính.
             document.getElementById('btnMainSubmit').classList.remove('hidden');
 
             // MỞ KHÓA CUỘN TRANG khi đăng ký mới
             document.getElementById('tab1').classList.remove('overflow-hidden');
             document.getElementById('tab1').classList.add('overflow-y-auto');
+
+            // Gọi đồng bộ ngay lập tức để cập nhật đúng trạng thái (khóa/mở) của quầy
+            syncPublicData();
         }
 
         // ==========================================
@@ -843,6 +855,16 @@
                     indicatorText.className = `text-[10px] font-bold uppercase mb-1.5 tracking-widest flex items-center transition-colors duration-500 ${colorClass}`;
                     box.className = `border-y border-white/10 shadow-inner flex flex-col justify-center items-center py-4 backdrop-blur-md mx-6 rounded-2xl mb-2 flex-shrink-0 transition-colors duration-500 ${boxBgClass}`;
 
+                    const isSuccessHidden = document.getElementById('successOverlay').classList.contains('hidden');
+                    const isSessionBlockHidden = document.getElementById('newSessionBlock').classList.contains('hidden');
+                    
+                    // Xác định form đang ở chế độ nào:
+                    // - Chế độ "Đang điền form" (bình thường): isSuccessHidden = true, isSessionBlockHidden = true
+                    // - Chế độ "Vừa đăng ký xong (hiện overlay to)": isSuccessHidden = false, isSessionBlockHidden = true
+                    // - Chế độ "Đã thu nhỏ (hiện 2 nút)": isSuccessHidden = true, isSessionBlockHidden = false
+                    
+                    const isNormalMode = isSuccessHidden && isSessionBlockHidden;
+
                     if (isFormLocked) {
                         btnSubmit.onclick = null;
                         btnSubmit.disabled = true;
@@ -854,27 +876,41 @@
                         document.getElementById('password').disabled = true;
                         document.getElementById('btnTogglePwd').disabled = true;
 
-                        // HIỆN MUSIC PLAYER KHI ĐÓNG QUẦY
+                        // Nếu ở chế độ bình thường thì mới hiện nút Xám. Nếu đang xem lịch sử thì ẩn đi.
+                        if (isNormalMode) {
+                            btnSubmit.classList.remove('hidden');
+                        } else {
+                            btnSubmit.classList.add('hidden');
+                        }
+
+                        // HIỆN MUSIC PLAYER KHI ĐÓNG QUẦY (Nhưng KHÔNG tự phát nhạc)
                         document.getElementById('musicPlayerWidget').classList.remove('hidden');
-                        if (typeof window.musicIntentionallyPaused !== 'undefined' && !window.musicIntentionallyPaused) {
-                            if (typeof playBgMusic === 'function') playBgMusic();
+                        if (typeof window.musicIntentionallyPaused !== 'undefined') {
+                            const audioEl = document.getElementById('bgMusic');
+                            // Chỉ ép nhạc về 0:00 nếu nhạc đang dừng
+                            if (audioEl && audioEl.paused) {
+                                audioEl.currentTime = 0; 
+                            }
                         }
                     } else {
-                        const isSuccessHidden = document.getElementById('successOverlay').classList.contains('hidden');
-                        const isSessionBlockHidden = document.getElementById('newSessionBlock').classList.contains('hidden');
-                        
-                        if (isSuccessHidden && isSessionBlockHidden) {
+                        if (isNormalMode) {
                             btnSubmit.onclick = showConfirmModal;
                             btnSubmit.disabled = false;
                             btnSubmit.className = "w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(0,147,208,0.4)] border border-white/20 active:scale-95 transition-all mt-6 flex justify-center items-center relative z-20";
                             btnText.textContent = "XÁC NHẬN ĐĂNG KÝ";
+                            btnSubmit.classList.remove('hidden');
                             
                             document.getElementById('fullName').disabled = false;
                             document.getElementById('mssv').disabled = false;
                             document.getElementById('password').disabled = false;
                             document.getElementById('btnTogglePwd').disabled = false;
                         } else {
+                            // Đang ở chế độ xem lại phiếu, phải khóa input và ẩn nút submit
                             btnSubmit.classList.add('hidden');
+                            document.getElementById('fullName').disabled = true;
+                            document.getElementById('mssv').disabled = true;
+                            document.getElementById('password').disabled = true;
+                            document.getElementById('btnTogglePwd').disabled = true;
                         }
 
                         // ẨN MUSIC PLAYER & TẮT NHẠC KHI QUẦY MỞ LẠI
@@ -1247,30 +1283,40 @@
             const disc = document.getElementById('musicDisc');
             
             audio.play().then(() => {
+                // Nút bên Mini Player
                 disc.classList.remove('paused');
                 document.getElementById('playIconSVG').classList.add('hidden');
                 document.getElementById('pauseIconSVG').classList.remove('hidden');
-                // Nút bên Spotify
+                
+                // Nút bên giao diện Spotify
                 document.getElementById('spPlayIcon').classList.add('hidden');
                 document.getElementById('spPauseIcon').classList.remove('hidden');
+                document.getElementById('spPlayPauseText').textContent = "TẠM DỪNG";
             }).catch(e => {
+                // Nút bên Mini Player
                 disc.classList.add('paused');
                 document.getElementById('playIconSVG').classList.remove('hidden');
                 document.getElementById('pauseIconSVG').classList.add('hidden');
-                // Nút bên Spotify
+                
+                // Nút bên giao diện Spotify
                 document.getElementById('spPlayIcon').classList.remove('hidden');
                 document.getElementById('spPauseIcon').classList.add('hidden');
+                document.getElementById('spPlayPauseText').textContent = "TIẾP TỤC PHÁT";
             });
         }
 
         function pauseBgMusic() {
             document.getElementById('bgMusic').pause();
+            
+            // Nút bên Mini Player
             document.getElementById('musicDisc').classList.add('paused');
             document.getElementById('playIconSVG').classList.remove('hidden');
             document.getElementById('pauseIconSVG').classList.add('hidden');
-            // Nút bên Spotify
+            
+            // Nút bên giao diện Spotify
             document.getElementById('spPlayIcon').classList.remove('hidden');
             document.getElementById('spPauseIcon').classList.add('hidden');
+            document.getElementById('spPlayPauseText').textContent = "TIẾP TỤC PHÁT";
         }
 
         function toggleMusic(e) {
@@ -1329,16 +1375,6 @@
             durationDisplay.textContent = formatTime(audioEl.duration);
         });
 
-        // Tính năng: Click vào thanh thời gian để tua nhạc (Seek)
-        function seekMusic(e) {
-            const container = document.getElementById('progressBarContainer');
-            const rect = container.getBoundingClientRect();
-            const offsetX = e.clientX - rect.left;
-            const totalWidth = rect.width;
-            const seekTime = (offsetX / totalWidth) * audioEl.duration;
-            audioEl.currentTime = seekTime;
-        }
-
         // ==========================================
         // KHÓA TRIỆT ĐỂ ZOOM VÀ PINCH-TO-ZOOM TRÊN MOBILE
         // ==========================================
@@ -1362,25 +1398,6 @@
             }
             lastTouchTime = now;
         }, { passive: false });
-
-        // ==========================================
-        // VƯỢT RÀO CHẶN AUTOPLAY CỦA TRÌNH DUYỆT (CHẠM ĐỂ PHÁT)
-        // ==========================================
-        function unlockAudioOnFirstTouch() {
-            const musicWidget = document.getElementById('musicPlayerWidget');
-            // Nếu khung nhạc đang hiển thị (nghĩa là quầy đang ĐÓNG) và người dùng chưa bấm nút Pause
-            if (musicWidget && !musicWidget.classList.contains('hidden') && !window.musicIntentionallyPaused) {
-                if (typeof playBgMusic === 'function') playBgMusic();
-            }
-            
-            // Xóa bộ lắng nghe sau cú chạm đầu tiên để tối ưu hiệu năng web
-            document.body.removeEventListener('click', unlockAudioOnFirstTouch);
-            document.body.removeEventListener('touchstart', unlockAudioOnFirstTouch);
-        }
-
-        // Lắng nghe cú chạm/click ĐẦU TIÊN vào bất cứ đâu trên màn hình
-        document.body.addEventListener('click', unlockAudioOnFirstTouch);
-        document.body.addEventListener('touchstart', unlockAudioOnFirstTouch);
 
     </script>
 </body>
