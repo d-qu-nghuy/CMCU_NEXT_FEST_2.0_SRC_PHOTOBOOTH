@@ -127,32 +127,69 @@
     <!-- HỆ THỐNG NHẠC NỀN -->
     <audio id="bgMusic" src="music/all-the-stars.mp3" loop preload="auto"></audio>
 
-    <!-- GIAO DIỆN MUSIC PLAYER (Góc phải màn hình) -->
-    <div id="musicPlayerWidget" class="hidden fixed bottom-6 right-6 z-50 bg-[#0a192f]/80 backdrop-blur-xl border border-white/20 rounded-full p-2 pr-4 flex items-center gap-3 shadow-[0_10px_30px_rgba(0,147,208,0.3)] fade-in">
-        <!-- Đĩa nhạc xoay -->
-        <div class="relative w-11 h-11 rounded-full overflow-hidden border border-white/30 animate-spin-slow paused" id="musicDisc">
-            <!-- Sửa lại đường dẫn ảnh đĩa nhạc của bạn ở đây -->
-            <img src="png/dia-nhac.png" alt="Vinyl" class="w-full h-full object-cover">
-            <div class="absolute inset-0 rounded-full shadow-[inset_0_0_8px_rgba(0,0,0,0.8)]"></div>
-            <!-- Trục giữa đĩa nhạc -->
-            <div class="absolute top-1/2 left-1/2 w-2.5 h-2.5 bg-black rounded-full transform -translate-x-1/2 -translate-y-1/2 border border-gray-500 shadow-sm"></div>
-        </div>
+    <!-- GIAO DIỆN MUSIC PLAYER (Thu gọn) -->
+    <div id="musicPlayerWidget" class="hidden fixed bottom-6 right-6 z-50 bg-[#0a192f]/80 backdrop-blur-xl border border-white/20 rounded-full p-2 flex items-center gap-2 shadow-[0_10px_30px_rgba(0,147,208,0.3)] fade-in">
         
-        <!-- Thông tin bài hát -->
-        <div class="flex flex-col mr-2">
-            <span class="text-[8px] text-[#0093d0] font-black uppercase tracking-widest mb-0.5">Now Playing</span>
-            <span class="text-[11px] text-white font-black tracking-widest uppercase">All The Stars</span>
+        <!-- Đĩa nhạc xoay (Đã XÓA hover:scale-105 để không bị khựng đĩa) -->
+        <div onclick="openSpotifyModal()" class="relative w-10 h-10 rounded-full overflow-hidden border border-white/30 animate-spin-slow paused cursor-pointer" id="musicDisc" title="Xem chi tiết">
+            <img src="png/dia-nhac.png" alt="Vinyl" class="w-full h-full object-cover pointer-events-none">
+            <div class="absolute inset-0 rounded-full shadow-[inset_0_0_5px_rgba(0,0,0,0.3)] pointer-events-none"></div>
         </div>
 
-        <!-- Các nút điều khiển (Khóa zoom, double tap) -->
-        <div class="flex items-center gap-1.5 border-l border-white/20 pl-3">
+        <!-- Các nút điều khiển mini -->
+        <div class="flex items-center gap-1.5 border-l border-white/20 pl-2 pr-1">
             <button type="button" onclick="toggleMusic(event)" class="w-8 h-8 flex justify-center items-center bg-white/10 hover:bg-[#0093d0] rounded-full text-white transition-colors active:scale-90 touch-action-none">
                 <svg id="playIconSVG" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
                 <svg id="pauseIconSVG" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
             </button>
-            <button type="button" onclick="restartMusic(event)" class="w-8 h-8 flex justify-center items-center bg-white/10 hover:bg-red-500 rounded-full text-white transition-colors active:scale-90 touch-action-none">
+            <button type="button" onclick="restartMusic(event)" class="w-8 h-8 flex justify-center items-center bg-white/10 hover:bg-[#0093d0] rounded-full text-white transition-colors active:scale-90 touch-action-none">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
+        </div>
+    </div>
+
+    <!-- GIAO DIỆN SPOTIFY PLAYER (Hiện khi click đĩa nhạc) -->
+    <div id="spotifyModal" onclick="closeSpotifyModal()" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 fade-in cursor-pointer">
+        <!-- Khung Player (Click vào đây không bị đóng modal) -->
+        <div onclick="event.stopPropagation()" class="bg-[#181818] w-full max-w-[320px] rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 flex flex-col cursor-default">
+            
+            <!-- Nút vuốt đóng -->
+            <button onclick="closeSpotifyModal()" class="self-end text-gray-400 hover:text-white mb-3 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Ảnh cover nguyên bản (Không khoét, không xoay) -->
+            <div class="w-full aspect-square bg-gray-800 rounded-lg shadow-2xl overflow-hidden mb-6">
+                <img src="png/dia-nhac.png" alt="Cover" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Tên bài hát & Ca sĩ -->
+            <div class="flex flex-col mb-5">
+                <h3 class="text-white font-bold text-xl truncate">All The Stars</h3>
+                <p class="text-gray-400 text-sm font-medium truncate mt-0.5">Kendrick Lamar, SZA</p>
+            </div>
+
+            <!-- Thanh tiến trình (Progress Bar) -->
+            <div class="w-full flex flex-col mb-6">
+                <div class="w-full h-1.5 bg-gray-600 rounded-full overflow-hidden cursor-pointer relative" id="progressBarContainer" onclick="seekMusic(event)">
+                    <div id="progressBar" class="h-full bg-white w-0 relative rounded-full"></div>
+                </div>
+                <div class="flex justify-between text-gray-400 text-[10px] font-bold mt-2">
+                    <span id="currentTimeDisplay">0:00</span>
+                    <span id="durationDisplay">0:00</span>
+                </div>
+            </div>
+
+            <!-- Nút điều khiển Spotify -->
+            <div class="flex justify-center items-center gap-8 mb-2">
+                <button onclick="restartMusic(event)" class="text-gray-400 hover:text-white transition-colors active:scale-90">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+                <button onclick="toggleMusic(event)" class="w-14 h-14 bg-white hover:bg-gray-200 rounded-full flex justify-center items-center text-black hover:scale-105 active:scale-95 transition-all">
+                    <svg id="spPlayIcon" class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                    <svg id="spPauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1213,10 +1250,16 @@
                 disc.classList.remove('paused');
                 document.getElementById('playIconSVG').classList.add('hidden');
                 document.getElementById('pauseIconSVG').classList.remove('hidden');
+                // Nút bên Spotify
+                document.getElementById('spPlayIcon').classList.add('hidden');
+                document.getElementById('spPauseIcon').classList.remove('hidden');
             }).catch(e => {
                 disc.classList.add('paused');
                 document.getElementById('playIconSVG').classList.remove('hidden');
                 document.getElementById('pauseIconSVG').classList.add('hidden');
+                // Nút bên Spotify
+                document.getElementById('spPlayIcon').classList.remove('hidden');
+                document.getElementById('spPauseIcon').classList.add('hidden');
             });
         }
 
@@ -1225,6 +1268,9 @@
             document.getElementById('musicDisc').classList.add('paused');
             document.getElementById('playIconSVG').classList.remove('hidden');
             document.getElementById('pauseIconSVG').classList.add('hidden');
+            // Nút bên Spotify
+            document.getElementById('spPlayIcon').classList.remove('hidden');
+            document.getElementById('spPauseIcon').classList.add('hidden');
         }
 
         function toggleMusic(e) {
@@ -1247,6 +1293,50 @@
                 window.musicIntentionallyPaused = false;
                 playBgMusic();
             }
+        }
+
+        // ==========================================
+        // HÀM GIAO DIỆN SPOTIFY & THANH TIẾN TRÌNH
+        // ==========================================
+        function openSpotifyModal() { document.getElementById('spotifyModal').classList.remove('hidden'); }
+        function closeSpotifyModal() { document.getElementById('spotifyModal').classList.add('hidden'); }
+
+        const audioEl = document.getElementById('bgMusic');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+
+        // Hàm format thời gian (0:00)
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // Lắng nghe liên tục khi nhạc phát để kéo thanh tiến trình
+        audioEl.addEventListener('timeupdate', () => {
+            if (audioEl.duration) {
+                const progressPercent = (audioEl.currentTime / audioEl.duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                currentTimeDisplay.textContent = formatTime(audioEl.currentTime);
+                durationDisplay.textContent = formatTime(audioEl.duration);
+            }
+        });
+
+        // Lấy tổng thời lượng bài hát khi load xong audio
+        audioEl.addEventListener('loadedmetadata', () => {
+            durationDisplay.textContent = formatTime(audioEl.duration);
+        });
+
+        // Tính năng: Click vào thanh thời gian để tua nhạc (Seek)
+        function seekMusic(e) {
+            const container = document.getElementById('progressBarContainer');
+            const rect = container.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const totalWidth = rect.width;
+            const seekTime = (offsetX / totalWidth) * audioEl.duration;
+            audioEl.currentTime = seekTime;
         }
 
         // ==========================================
