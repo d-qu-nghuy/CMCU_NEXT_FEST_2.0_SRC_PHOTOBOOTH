@@ -112,12 +112,49 @@
             100% { background-position: 100% 50%; }
         }
 
+        /* Hiệu ứng xoay đĩa nhạc */
+        .animate-spin-slow { animation: spin-slow 4s linear infinite; }
+        @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+        .paused { animation-play-state: paused; }
+
     </style>
 </head>
 
 <body class="bg-cyber-grid font-sans text-gray-100 h-[100dvh] w-full flex justify-center items-center p-4 relative overflow-hidden">
 
     <canvas id="plexusCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+
+    <!-- HỆ THỐNG NHẠC NỀN -->
+    <audio id="bgMusic" src="music/all-the-stars.mp3" loop preload="auto"></audio>
+
+    <!-- GIAO DIỆN MUSIC PLAYER (Góc phải màn hình) -->
+    <div id="musicPlayerWidget" class="hidden fixed bottom-6 right-6 z-50 bg-[#0a192f]/80 backdrop-blur-xl border border-white/20 rounded-full p-2 pr-4 flex items-center gap-3 shadow-[0_10px_30px_rgba(0,147,208,0.3)] fade-in">
+        <!-- Đĩa nhạc xoay -->
+        <div class="relative w-11 h-11 rounded-full overflow-hidden border border-white/30 animate-spin-slow paused" id="musicDisc">
+            <!-- Sửa lại đường dẫn ảnh đĩa nhạc của bạn ở đây -->
+            <img src="png/dia-nhac.png" alt="Vinyl" class="w-full h-full object-cover">
+            <div class="absolute inset-0 rounded-full shadow-[inset_0_0_8px_rgba(0,0,0,0.8)]"></div>
+            <!-- Trục giữa đĩa nhạc -->
+            <div class="absolute top-1/2 left-1/2 w-2.5 h-2.5 bg-black rounded-full transform -translate-x-1/2 -translate-y-1/2 border border-gray-500 shadow-sm"></div>
+        </div>
+        
+        <!-- Thông tin bài hát -->
+        <div class="flex flex-col mr-2">
+            <span class="text-[8px] text-[#0093d0] font-black uppercase tracking-widest mb-0.5">Now Playing</span>
+            <span class="text-[11px] text-white font-black tracking-widest uppercase">All The Stars</span>
+        </div>
+
+        <!-- Các nút điều khiển (Khóa zoom, double tap) -->
+        <div class="flex items-center gap-1.5 border-l border-white/20 pl-3">
+            <button type="button" onclick="toggleMusic(event)" class="w-8 h-8 flex justify-center items-center bg-white/10 hover:bg-[#0093d0] rounded-full text-white transition-colors active:scale-90 touch-action-none">
+                <svg id="playIconSVG" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                <svg id="pauseIconSVG" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
+            </button>
+            <button type="button" onclick="restartMusic(event)" class="w-8 h-8 flex justify-center items-center bg-white/10 hover:bg-red-500 rounded-full text-white transition-colors active:scale-90 touch-action-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <div class="w-full max-w-md glass-panel rounded-[2rem] flex flex-col relative z-10 overflow-hidden h-full max-h-[850px]">
         
@@ -779,13 +816,17 @@
                         document.getElementById('mssv').disabled = true;
                         document.getElementById('password').disabled = true;
                         document.getElementById('btnTogglePwd').disabled = true;
+
+                        // HIỆN MUSIC PLAYER KHI ĐÓNG QUẦY
+                        document.getElementById('musicPlayerWidget').classList.remove('hidden');
+                        if (typeof window.musicIntentionallyPaused !== 'undefined' && !window.musicIntentionallyPaused) {
+                            if (typeof playBgMusic === 'function') playBgMusic();
+                        }
                     } else {
-                        // Kiểm tra xem có đang ở chế độ xem lại phiếu không
                         const isSuccessHidden = document.getElementById('successOverlay').classList.contains('hidden');
                         const isSessionBlockHidden = document.getElementById('newSessionBlock').classList.contains('hidden');
                         
                         if (isSuccessHidden && isSessionBlockHidden) {
-                            // CHỈ KHI CHƯA ĐĂNG KÝ: Phục hồi nút Submit và mở khóa Input
                             btnSubmit.onclick = showConfirmModal;
                             btnSubmit.disabled = false;
                             btnSubmit.className = "w-full bg-gradient-to-r from-[#004a8c] to-[#0093d0] hover:from-[#005aab] hover:to-[#00a3e0] text-white font-black tracking-widest py-4 rounded-xl shadow-[0_0_20px_rgba(0,147,208,0.4)] border border-white/20 active:scale-95 transition-all mt-6 flex justify-center items-center relative z-20";
@@ -796,9 +837,16 @@
                             document.getElementById('password').disabled = false;
                             document.getElementById('btnTogglePwd').disabled = false;
                         } else {
-                            // NẾU ĐANG Ở CHẾ ĐỘ "MỞ LẠI PHIẾU": Bắt buộc giấu nút Submit đi
                             btnSubmit.classList.add('hidden');
                         }
+
+                        // ẨN MUSIC PLAYER & TẮT NHẠC KHI QUẦY MỞ LẠI
+                        document.getElementById('musicPlayerWidget').classList.add('hidden');
+                        if (typeof pauseBgMusic === 'function') {
+                            pauseBgMusic();
+                            document.getElementById('bgMusic').currentTime = 0; // Thêm dòng này để ép nhạc quay về 0:00
+                        }
+                        window.musicIntentionallyPaused = false;
                     }
 
                     // ==========================================
@@ -1153,6 +1201,55 @@
         animate(); // (Dòng code cũ hiện tại của bạn)
 
         // ==========================================
+        // CÁC HÀM XỬ LÝ MUSIC PLAYER (KHÓA ZOOM KÉP)
+        // ==========================================
+        window.musicIntentionallyPaused = false;
+
+        function playBgMusic() {
+            const audio = document.getElementById('bgMusic');
+            const disc = document.getElementById('musicDisc');
+            
+            audio.play().then(() => {
+                disc.classList.remove('paused');
+                document.getElementById('playIconSVG').classList.add('hidden');
+                document.getElementById('pauseIconSVG').classList.remove('hidden');
+            }).catch(e => {
+                disc.classList.add('paused');
+                document.getElementById('playIconSVG').classList.remove('hidden');
+                document.getElementById('pauseIconSVG').classList.add('hidden');
+            });
+        }
+
+        function pauseBgMusic() {
+            document.getElementById('bgMusic').pause();
+            document.getElementById('musicDisc').classList.add('paused');
+            document.getElementById('playIconSVG').classList.remove('hidden');
+            document.getElementById('pauseIconSVG').classList.add('hidden');
+        }
+
+        function toggleMusic(e) {
+            e.preventDefault(); 
+            const audio = document.getElementById('bgMusic');
+            if (audio.paused) {
+                window.musicIntentionallyPaused = false;
+                playBgMusic();
+            } else {
+                window.musicIntentionallyPaused = true;
+                pauseBgMusic();
+            }
+        }
+
+        function restartMusic(e) {
+            e.preventDefault(); 
+            const audio = document.getElementById('bgMusic');
+            audio.currentTime = 0; 
+            if (audio.paused) {
+                window.musicIntentionallyPaused = false;
+                playBgMusic();
+            }
+        }
+
+        // ==========================================
         // KHÓA TRIỆT ĐỂ ZOOM VÀ PINCH-TO-ZOOM TRÊN MOBILE
         // ==========================================
         let lastTouchTime = 0;
@@ -1175,6 +1272,26 @@
             }
             lastTouchTime = now;
         }, { passive: false });
+
+        // ==========================================
+        // VƯỢT RÀO CHẶN AUTOPLAY CỦA TRÌNH DUYỆT (CHẠM ĐỂ PHÁT)
+        // ==========================================
+        function unlockAudioOnFirstTouch() {
+            const musicWidget = document.getElementById('musicPlayerWidget');
+            // Nếu khung nhạc đang hiển thị (nghĩa là quầy đang ĐÓNG) và người dùng chưa bấm nút Pause
+            if (musicWidget && !musicWidget.classList.contains('hidden') && !window.musicIntentionallyPaused) {
+                if (typeof playBgMusic === 'function') playBgMusic();
+            }
+            
+            // Xóa bộ lắng nghe sau cú chạm đầu tiên để tối ưu hiệu năng web
+            document.body.removeEventListener('click', unlockAudioOnFirstTouch);
+            document.body.removeEventListener('touchstart', unlockAudioOnFirstTouch);
+        }
+
+        // Lắng nghe cú chạm/click ĐẦU TIÊN vào bất cứ đâu trên màn hình
+        document.body.addEventListener('click', unlockAudioOnFirstTouch);
+        document.body.addEventListener('touchstart', unlockAudioOnFirstTouch);
+
     </script>
 </body>
 </html>
