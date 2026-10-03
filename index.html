@@ -87,10 +87,10 @@
         .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
 
         /* Khóa bôi đen, khóa chớp sáng (Highlight) và khóa Zoom (Touch-action) trên di động */
-        body { 
+        html, body { 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; 
             -webkit-tap-highlight-color: transparent; 
-            overscroll-behavior: none; /* Thêm dòng này: Tắt hiệu ứng kéo dãn lòi viền nền */
+            overscroll-behavior: none; /* Khóa kéo dãn lòi viền trên cả html và body */
         }
         input, textarea { 
             -webkit-user-select: none; -ms-user-select: none; user-select: none; 
@@ -323,7 +323,7 @@
             </div>
 
             <!-- Modal Xác Nhận Kép -->
-            <div id="confirmModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in overflow-hidden">
+            <div id="confirmModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in overflow-hidden touch-none">
                 <div class="glass-panel rounded-3xl p-6 w-full max-w-sm text-center relative overflow-hidden pointer-events-auto">
                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-30"></div>
                     <div class="w-16 h-16 bg-[#0093d0]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#0093d0]/50">
@@ -364,7 +364,7 @@
             </div>
 
             <!-- GIAO DIỆN SAU KHI NHẬP PASS THÀNH CÔNG -->
-            <div id="galleryView" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-4 fade-in">
+            <div id="galleryView" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in">
                 <div class="glass-panel rounded-3xl p-6 w-full max-w-sm text-center relative overflow-hidden pointer-events-auto">
                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-30"></div>
                     
@@ -385,7 +385,7 @@
             </div>
 
             <!-- Modal Nhập Mật Khẩu -->
-            <div id="passwordModal" onclick="closePasswordModal()" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-4 fade-in cursor-pointer">
+            <div id="passwordModal" onclick="closePasswordModal()" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in cursor-pointer touch-none">
                 <div onclick="event.stopPropagation()" class="glass-panel rounded-3xl p-6 w-full max-w-sm relative cursor-default border border-white/20 pointer-events-auto">
                     <div class="absolute -top-10 -left-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-20"></div>
                     <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/10 rounded-full p-1 transition-colors">
@@ -1395,6 +1395,22 @@
                 }
             }
             lastTouchTime = now;
+        }, { passive: false });
+
+        // 3. Khóa hành vi "Rubber-banding" (Kéo dãn lòi viền nền) trên iOS Safari khi mở Modal
+        document.addEventListener('touchmove', function(e) {
+            // Kiểm tra xem có Modal nào đang mở không (bằng cách tìm class fixed và z-[100] đang hiển thị)
+            const openModals = document.querySelectorAll('.fixed.z-\\[100\\]:not(.hidden)');
+            
+            // Nếu có Modal đang mở, VÀ người dùng đang KHÔNG cố gắng cuộn một danh sách dài bên trong Modal đó
+            if (openModals.length > 0) {
+                // Xác định xem phần tử người dùng đang chạm vào có phải là vùng có thể cuộn được không
+                const isScrollableContent = e.target.closest('.overflow-y-auto');
+                
+                if (!isScrollableContent) {
+                    e.preventDefault(); // Ngăn chặn hành vi trượt nền mặc định
+                }
+            }
         }, { passive: false });
 
     </script>
