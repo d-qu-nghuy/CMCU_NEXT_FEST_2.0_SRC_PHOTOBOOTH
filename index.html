@@ -656,7 +656,16 @@
                     // Giả lập lấy link Drive 0.8s
                     setTimeout(() => {
                         closePasswordModal();
-                        document.getElementById('galleryTitle').textContent = currentTargetFolder;
+                        
+                        // --- ẢO THUẬT ĐỔI TÊN CHO BẢNG MỞ KHÓA THÀNH CÔNG ---
+                        let displayTitle = currentTargetFolder;
+                        if (currentTargetFolder === "Khách VIP") {
+                            displayTitle = "[SRC] CLB SINH VIÊN NCKH";
+                        }
+                        
+                        document.getElementById('galleryTitle').textContent = displayTitle;
+                        // ----------------------------------------------------
+                        
                         const demoData = DEMO_FOLDERS.find(f => f.mssv === currentTargetFolder);
                         document.getElementById('driveLinkBtn').href = demoData ? demoData.demoLink : "#";
                         document.getElementById('galleryView').classList.remove('hidden');

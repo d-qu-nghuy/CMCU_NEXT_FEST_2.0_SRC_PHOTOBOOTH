@@ -6,132 +6,196 @@
     <title>Trạm điều khiển - Photobooth</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        *, *::before, *::after { touch-action: manipulation !important; }
+
         input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
         input[type="password"]::-webkit-reveal { display: none; }
-        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 800; }
-        .tab-inactive { border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 147, 208, 0.5); }
+
+        /* NỀN VŨ TRỤ CYBER */
+        .bg-cyber-grid {
+            background-color: #031429;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 147, 208, 0.4) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 47, 91, 0.8) 0px, transparent 50%),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+        }
+
+        /* KHỐI KÍNH MỜ */
+        .glass-panel {
+            background: rgba(10, 25, 47, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Ô NHẬP LIỆU KÍNH */
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px !important; 
+        }
+        
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(0, 147, 208, 0.8);
+            box-shadow: 0 0 15px rgba(0, 147, 208, 0.4);
+            -webkit-user-select: text !important; 
+            -ms-user-select: text !important; 
+            user-select: text !important;
+        }
+
+        .glass-input::-webkit-input-placeholder { color: rgba(156, 163, 175, 0.6) !important; -webkit-text-fill-color: rgba(156, 163, 175, 0.6) !important; font-weight: 500; }
+        .glass-input::placeholder { color: rgba(156, 163, 175, 0.6) !important; -webkit-text-fill-color: rgba(156, 163, 175, 0.6) !important; font-weight: 500; }
+
+        /* TABS MỚI */
+        .tab-active { background: rgba(255, 255, 255, 0.15); color: #fff; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .tab-inactive { background: transparent; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
+        .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
+
+        /* KHÓA UX DI ĐỘNG */
+        body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+        input, textarea { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        button, a, div[onclick] { -webkit-tap-highlight-color: transparent; outline: none; touch-action: manipulation; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 pb-24">
+<body class="bg-cyber-grid font-sans text-gray-100 h-[100dvh] w-full flex justify-center items-center p-4 relative overflow-hidden">
+
+    <canvas id="plexusCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none"></canvas>
 
     <!-- MENU NỔI CHO TAB 2: LỊCH SỬ THƯ MỤC -->
-    <div id="batchContextMenu" class="hidden fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[100] overflow-hidden">
-        <button id="ctxMenuDrive" onclick="batchOpenDrive()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">🔗 Mở thư mục Drive</button>
-        <button id="ctxMenuEdit" onclick="batchEditMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
-        <button id="ctxMenuView" onclick="batchViewPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">👁️ Xem Mật khẩu</button>
-        <button id="ctxMenuDelete" onclick="batchDelete()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Xóa thư mục</button>
+    <div id="batchContextMenu" class="hidden fixed w-48 bg-[#0a192f]/95 backdrop-blur-xl rounded-xl shadow-[0_10px_40px_rgba(0,147,208,0.3)] border border-white/20 z-[100] overflow-hidden">
+        <button id="ctxMenuDrive" onclick="batchOpenDrive()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">🔗 Mở thư mục Drive</button>
+        <button id="ctxMenuEdit" onclick="batchEditMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">✏️ Sửa Tên/MSSV</button>
+        <button id="ctxMenuView" onclick="batchViewPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">👁️ Xem Mật khẩu</button>
+        <button id="ctxMenuDelete" onclick="batchDelete()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/20 flex items-center transition-colors">🗑️ Xóa thư mục</button>
     </div>
 
     <!-- MENU NỔI CHO TAB 1: HÀNG ĐỢI -->
-    <div id="waitBatchContextMenu" class="hidden fixed w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-[100] overflow-hidden">
-        <button id="ctxWaitMenuEdit" onclick="batchEditWaitMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">✏️ Sửa Tên/MSSV</button>
-        <button id="ctxWaitMenuView" onclick="batchViewWaitPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 flex items-center">👁️ Xem Mật khẩu</button>
-        <button id="ctxWaitMenuDelete" onclick="batchDeleteWait()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center">🗑️ Hủy đăng ký</button>
+    <div id="waitBatchContextMenu" class="hidden fixed w-48 bg-[#0a192f]/95 backdrop-blur-xl rounded-xl shadow-[0_10px_40px_rgba(0,147,208,0.3)] border border-white/20 z-[100] overflow-hidden">
+        <button id="ctxWaitMenuEdit" onclick="batchEditWaitMSSV()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">✏️ Sửa Tên/MSSV</button>
+        <button id="ctxWaitMenuView" onclick="batchViewWaitPasswords()" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">👁️ Xem Mật khẩu</button>
+        <button id="ctxWaitMenuDelete" onclick="batchDeleteWait()" class="w-full text-left px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/20 flex items-center transition-colors">🗑️ Hủy đăng ký</button>
     </div>
 
-    <div class="max-w-md mx-auto bg-white shadow-xl min-h-screen relative overflow-hidden flex flex-col">
+    <div class="w-full max-w-md glass-panel rounded-[2rem] flex flex-col relative z-10 overflow-hidden h-full max-h-[850px]">
         
         <!-- Header & Modern Custom Dropdown -->
-        <div class="bg-blue-600 text-white p-4 text-center relative shadow-md z-30" id="adminHeader">
-            <h1 class="text-2xl font-black tracking-wider uppercase mb-3">ĐIỀU PHỐI PHOTOBOOTH</h1>
+        <div class="p-4 text-center relative z-30 bg-transparent border-b border-white/10" id="adminHeader">
+            <h1 class="text-2xl font-black tracking-wider uppercase mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#0093d0] via-white to-[#0093d0] drop-shadow-[0_0_10px_rgba(0,147,208,0.3)]">ĐIỀU PHỐI PHOTOBOOTH</h1>
             
-            <!-- Nút Refresh góc phải -->
-            <button onclick="fetchAllData()" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-2 rounded-full active:scale-95 transition-transform shadow-sm">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <button onclick="fetchAllData()" class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 p-2 rounded-full active:scale-95 transition-transform border border-white/10">
+                <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
 
-            <!-- Dropdown Trạng Thái Tùy Chỉnh (Modern UI) -->
+            <!-- Dropdown Trạng Thái -->
             <div class="relative w-full max-w-[280px] mx-auto text-left">
-                <button type="button" id="statusDropdownBtn" onclick="toggleStatusDropdown(event)" class="w-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-sm font-bold py-2.5 px-4 rounded-xl flex justify-between items-center transition-all shadow-inner active:scale-95">
+                <button type="button" id="statusDropdownBtn" onclick="toggleStatusDropdown(event)" class="w-full bg-black/40 hover:bg-black/60 border border-white/20 text-gray-200 text-sm font-bold py-2.5 px-4 rounded-xl flex justify-between items-center transition-all shadow-inner active:scale-95">
                     <span id="currentStatusText" class="flex items-center gap-2">🟢 Sẵn sàng đón khách</span>
-                    <svg id="statusDropdownIcon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg id="statusDropdownIcon" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 
-                <!-- Danh sách Menu (Đã xóa trạng thái tải ảnh) -->
-                <div id="statusOptions" class="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100 hidden flex-col overflow-hidden py-1.5 origin-top transition-all duration-200 z-50">
-                    <button onclick="selectGlobalStatus('ready', '🟢 Sẵn sàng đón khách')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors w-full text-left">🟢 Sẵn sàng đón khách</button>
-                    <button onclick="selectGlobalStatus('early', '🟡 Mở đăng ký sớm')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors w-full text-left">🟡 Mở đăng ký sớm</button>
-                    <button onclick="selectGlobalStatus('crowded', '🟠 Đang quá tải')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left">🟠 Đang quá tải</button>
-                    <button onclick="selectGlobalStatus('setup', '🔴 Đang Setup / Bảo trì')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Đang Setup / Bảo trì</button>
-                    <button onclick="selectGlobalStatus('break', '🔴 Tạm nghỉ / Đổi ca')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Tạm nghỉ / Đổi ca</button>
-                    <button onclick="selectGlobalStatus('closed', '🔴 Đã đóng quầy')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">🔴 Đã đóng quầy</button>
+                <!-- Danh sách Menu -->
+                <div id="statusOptions" class="absolute left-0 right-0 mt-2 bg-[#0a192f] rounded-xl shadow-[0_10px_40px_rgba(0,147,208,0.3)] border border-white/20 hidden flex-col overflow-hidden py-1.5 origin-top transition-all duration-200 z-50">
+                    <button onclick="selectGlobalStatus('ready', '🟢 Sẵn sàng đón khách')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left border-b border-white/5">🟢 Sẵn sàng đón khách</button>
+                    <button onclick="selectGlobalStatus('early', '🟡 Mở đăng ký sớm')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left border-b border-white/5">🟡 Mở đăng ký sớm</button>
+                    <button onclick="selectGlobalStatus('crowded', '🟠 Đang quá tải')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left border-b border-white/5">🟠 Đang quá tải</button>
+                    <button onclick="selectGlobalStatus('setup', '🔴 Đang Setup / Bảo trì')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left border-b border-white/5">🔴 Đang Setup / Bảo trì</button>
+                    <button onclick="selectGlobalStatus('break', '🔴 Tạm nghỉ / Đổi ca')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left border-b border-white/5">🔴 Tạm nghỉ / Đổi ca</button>
+                    <button onclick="selectGlobalStatus('closed', '🔴 Đã đóng quầy')" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors w-full text-left">🔴 Đã đóng quầy</button>
                 </div>
             </div>
         </div>
 
-        <div class="p-4 bg-blue-50 border-b border-blue-100 z-10 shadow-sm">
-            <h2 class="text-xs font-bold text-blue-500 uppercase mb-2 tracking-wider flex items-center">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2"></span> LƯỢT CHỤP HIỆN TẠI
+        <div class="p-4 bg-transparent border-b border-white/10 z-10 shadow-sm relative">
+            <h2 class="text-xs font-bold text-[#0093d0] uppercase mb-2 tracking-wider flex items-center">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2 shadow-[0_0_8px_red]"></span> LƯỢT CHỤP HIỆN TẠI
             </h2>
-            <div id="activeStudentContainer" class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 min-h-[80px]">
-                <span class="text-gray-400 italic text-sm font-medium">Trống - Sẵn sàng đón khách</span>
+            <div id="activeStudentContainer" class="flex justify-between items-center bg-black/40 p-4 rounded-xl shadow-inner border border-white/10 border-l-4 border-l-[#0093d0] min-h-[80px]">
+                <span class="text-gray-500 italic text-sm font-medium">Trống - Sẵn sàng đón khách</span>
             </div>
         </div>
 
-        <div class="flex bg-white shadow-sm z-10 sticky top-0 border-b border-gray-200">
-            <button id="btnTab1" onclick="switchTab('tab1')" class="flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide">HÀNG ĐỢI</button>
-            <button id="btnTab2" onclick="switchTab('tab2')" class="flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide">LỊCH SỬ THƯ MỤC</button>
+        <div class="p-3 z-20 sticky top-0 bg-transparent">
+            <div class="flex bg-black/40 backdrop-blur-md rounded-2xl p-1 border border-white/5 shadow-inner">
+                <button id="btnTab1" onclick="switchTab('tab1')" class="flex-1 py-3 text-center tab-active rounded-xl transition-all uppercase text-xs tracking-widest">HÀNG ĐỢI</button>
+                <button id="btnTab2" onclick="switchTab('tab2')" class="flex-1 py-3 text-center tab-inactive rounded-xl transition-all uppercase text-xs tracking-widest">LỊCH SỬ THƯ MỤC</button>
+            </div>
         </div>
 
         <!-- TAB 1: HÀNG ĐỢI & THÊM NHANH -->
-        <div id="tab1" class="flex-1 p-4 fade-in">
+        <div id="tab1" class="flex-1 flex flex-col relative p-4 fade-in overflow-y-auto pb-12">
             <div class="flex gap-2 mb-4 relative">
                 <div class="relative flex-1">
-                    <input type="text" id="searchWaiting" placeholder="Tìm MSSV đang đợi..." class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 transition-colors uppercase font-bold text-gray-700 text-sm">
+                    <input type="text" id="searchWaiting" placeholder="Tìm MSSV đang đợi..." class="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input transition-all uppercase font-bold text-gray-200 text-sm outline-none">
                     <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 
-                <!-- Dropdown Thêm Nhanh (Click thay vì Hover) -->
+                <!-- Dropdown Thêm Nhanh -->
                 <div class="relative">
-                    <button id="btnQuickAdd" onclick="toggleQuickAddDropdown(event)" class="bg-purple-600 hover:bg-purple-700 text-white h-full px-4 rounded-lg font-bold text-sm shadow-md transition-colors flex items-center justify-center">
+                    <button id="btnQuickAdd" onclick="toggleQuickAddDropdown(event)" class="bg-gradient-to-r from-[#8a5ce8] to-[#b026ff] hover:from-[#9b6cf9] hover:to-[#c137ff] text-white h-full px-4 rounded-xl font-bold text-sm shadow-[0_0_15px_rgba(176,38,255,0.4)] border border-white/20 active:scale-95 transition-all flex items-center justify-center">
                         + THÊM NHANH
                     </button>
-                    <!-- Khối thả xuống -->
-                    <div id="quickAddDropdown" class="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-2xl border border-gray-200 hidden z-50 overflow-hidden">
-                        <button onclick="openQuickAddModal('student')" class="w-full text-left px-4 py-3 text-xs font-bold text-blue-600 hover:bg-blue-50 border-b border-gray-100 flex items-center">
-                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> + Sinh viên
+                    <!-- Khối thả xuống Kính mờ -->
+                    <div id="quickAddDropdown" class="absolute right-0 top-full mt-2 w-48 bg-[#0a192f]/95 backdrop-blur-xl rounded-xl shadow-[0_10px_40px_rgba(176,38,255,0.3)] border border-white/20 hidden z-50 overflow-hidden py-1.5 origin-top-right transition-all">
+                        <button onclick="openQuickAddModal('student')" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white border-b border-white/5 flex items-center transition-colors">
+                            <span class="w-2 h-2 rounded-full bg-[#0093d0] mr-3 shadow-[0_0_8px_#0093d0]"></span> + Sinh viên
                         </button>
-                        <button onclick="openQuickAddModal('vip')" class="w-full text-left px-4 py-3 text-xs font-bold text-purple-600 hover:bg-purple-50 flex items-center">
-                            <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span> + Khách VIP
+                        <button onclick="openQuickAddModal('vip')" class="w-full text-left px-4 py-3 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white flex items-center transition-colors">
+                            <span class="w-2 h-2 rounded-full bg-[#b026ff] mr-3 shadow-[0_0_8px_#b026ff]"></span> + Khách VIP
                         </button>
                     </div>
                 </div>
-
             </div>
             <div id="waitingListContainer" class="space-y-3 pb-4"></div>
         </div>
 
-        <div id="tab2" class="flex-1 p-4 bg-gray-50 hidden fade-in">
-            <div class="mb-4 relative">
-                <input type="text" id="searchCompleted" placeholder="Tìm kiếm thư mục..." class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 transition-colors font-bold text-gray-700 text-sm shadow-sm">
+        <div id="tab2" class="flex-1 flex flex-col relative p-4 bg-transparent hidden fade-in overflow-y-auto pb-12">
+            <div class="mb-4 relative flex-shrink-0">
+                <input type="text" id="searchCompleted" placeholder="Tìm kiếm thư mục..." class="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input transition-all uppercase font-bold text-gray-200 text-sm outline-none">
                 <svg class="w-4 h-4 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
-            <div class="grid grid-cols-2 gap-3" id="completedGrid"></div>
+            <div class="grid grid-cols-2 gap-3 content-start" id="completedGrid"></div>
         </div>
     </div>
 
     <!-- Modal Thêm Nhanh (Dùng chung cho cả Sinh viên và VIP) -->
-    <div id="quickAddModal" onclick="closeQuickAddModal()" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 fade-in cursor-pointer">
-        <div onclick="event.stopPropagation()" class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative cursor-default">
-            <button onclick="closeQuickAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    <div id="quickAddModal" onclick="closeQuickAddModal()" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 fade-in cursor-pointer">
+        <div onclick="event.stopPropagation()" class="glass-panel rounded-3xl p-6 w-full max-w-sm relative cursor-default border border-white/20 pointer-events-auto overflow-hidden">
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-[#b026ff] rounded-full blur-3xl opacity-20" id="quickAddGlow"></div>
             
-            <h3 id="quickAddTitle" class="text-xl font-black text-purple-700 mb-1 flex items-center">Đăng ký thủ công</h3>
-            <p id="quickAddDesc" class="text-xs text-gray-500 mb-4">Tạo nhanh thư mục và cấp mã bỏ qua bước điền form.</p>
+            <button onclick="closeQuickAddModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/10 rounded-full p-1 transition-colors z-20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
             
-            <form id="quickAddForm" class="space-y-4">
+            <h3 id="quickAddTitle" class="text-xl font-black text-white mb-1 flex items-center tracking-wide uppercase relative z-20">Đăng ký thủ công</h3>
+            <p id="quickAddDesc" class="text-[11px] text-gray-400 mb-6 font-medium tracking-wide relative z-20">Tạo nhanh thư mục và cấp mã bỏ qua form.</p>
+            
+            <form id="quickAddForm" class="space-y-5 relative z-20">
                 <div>
-                    <label id="quickAddLabel" class="block text-sm font-bold text-gray-700 mb-1">Mã số / Tên Thư Mục</label>
-                    <input type="text" id="quickAddInput" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-bold text-gray-800 uppercase">
+                    <label id="quickAddLabel" class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mã số / Tên Thư Mục</label>
+                    <input type="text" id="quickAddInput" required class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-bold outline-none uppercase text-white">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Mật khẩu (6 số)</label>
+                    <label class="block text-xs font-bold text-gray-300 mb-1.5 ml-1 tracking-wide">Mật khẩu (6 số)</label>
                     <div class="relative">
-                        <!-- Ô nhập mật khẩu Modal Thêm Nhanh -->
                         <input type="password" id="quickAddPassword" required placeholder="••••••" maxlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
-                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 font-black tracking-widest text-center text-lg pr-12 outline-none">
-                        <button type="button" onclick="toggleQuickAddPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-purple-600 transition-colors flex items-center justify-center">
+                            class="w-full px-4 py-3.5 rounded-xl glass-input transition-all font-black tracking-widest text-center text-lg pr-12 outline-none text-white">
+                        <button type="button" onclick="toggleQuickAddPassword()" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors flex items-center justify-center">
                             <svg id="quickAddEyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
                             </svg>
@@ -140,8 +204,8 @@
                 </div>
                 <input type="hidden" id="quickAddTypeVal" value="vip">
 
-                <button type="submit" id="btnQuickAddSubmit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform mt-2">TẠO NHANH & XẾP HÀNG</button>
-                <p id="quickAddError" class="text-red-500 text-xs font-bold text-center h-4 mt-2"></p>
+                <button type="submit" id="btnQuickAddSubmit" class="w-full bg-gradient-to-r from-[#8a5ce8] to-[#b026ff] hover:from-[#9b6cf9] hover:to-[#c137ff] text-white font-black tracking-widest py-3.5 rounded-xl shadow-[0_0_15px_rgba(176,38,255,0.4)] border border-white/20 active:scale-95 transition-all mt-4">TẠO NHANH & XẾP HÀNG</button>
+                <p id="quickAddError" class="text-red-400 text-xs font-bold text-center h-4 mt-2 drop-shadow-md"></p>
             </form>
         </div>
     </div>
@@ -155,6 +219,25 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbz_m-F4cTM-vvyyaUs9Yf0QNoPxpuAFZtNbUQyYEy-GsxfgngyJHb3Lf-m-OlggkC1b/exec";
         
+        // ==========================================
+        // KHỞI TẠO BIẾN CANVAS VŨ TRỤ
+        // ==========================================
+        const canvas = document.getElementById('plexusCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        const particleCount = window.innerWidth < 768 ? 120 : 280;
+        const connectionDistance = 130; 
+        const mouseConnectionDistance = 200;
+        
+        let mouse = { x: null, y: null, isActive: false };
+        let ripples = [];
+
+        let nebulae = [];
+        let tinyStars = [];
+        let largeStars = [];
+
         let waitingData = [];
         let completedData = [];
         let isFirstLoad = true;
@@ -175,8 +258,14 @@
             document.getElementById('tab2').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
 
-            document.getElementById('btnTab1').className = tabId === 'tab1' ? "flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide" : "flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide";
-            document.getElementById('btnTab2').className = tabId === 'tab2' ? "flex-1 py-3 text-center tab-active transition-colors text-sm tracking-wide" : "flex-1 py-3 text-center tab-inactive transition-colors text-sm tracking-wide";
+            // Đã cập nhật lại class để giữ nguyên bo góc (rounded-xl) và text-xs
+            document.getElementById('btnTab1').className = tabId === 'tab1' 
+                ? "flex-1 py-3 text-center tab-active rounded-xl transition-all uppercase text-xs tracking-widest" 
+                : "flex-1 py-3 text-center tab-inactive rounded-xl transition-all uppercase text-xs tracking-widest";
+                
+            document.getElementById('btnTab2').className = tabId === 'tab2' 
+                ? "flex-1 py-3 text-center tab-active rounded-xl transition-all uppercase text-xs tracking-widest" 
+                : "flex-1 py-3 text-center tab-inactive rounded-xl transition-all uppercase text-xs tracking-widest";
         }
         const initialAdminTab = localStorage.getItem('admin_current_tab') || 'tab1';
         switchTab(initialAdminTab);
@@ -305,30 +394,31 @@
 
             data.forEach(student => {
                 if (student.status === 'Active') {
+                    // Thẻ đang chụp (Active)
                     activeContainer.innerHTML = `
                         <div class="flex-1 overflow-hidden pr-2">
-                            <p class="text-xl font-black text-blue-700 tracking-wider truncate">${student.name}</p>
-                            <p class="text-sm font-bold text-gray-700 tracking-wider truncate">${student.mssv}</p>
+                            <p class="text-[13px] font-black text-white uppercase tracking-widest truncate w-full drop-shadow-md">${student.name}</p>
+                            <p class="text-[10px] font-bold text-[#0093d0] uppercase tracking-widest mt-1">${student.mssv}</p>
                         </div>
-                        <button onclick="updateStatus('${student.mssv}', 'Completed')" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-lg shadow-md active:scale-95 transition-transform ml-3 relative z-20">HOÀN THÀNH</button>
+                        <button onclick="updateStatus('${student.mssv}', 'Completed')" class="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-black tracking-widest py-3 px-5 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.4)] border border-white/20 active:scale-95 transition-all text-xs ml-3 relative z-20">HOÀN THÀNH</button>
                     `;
                 } else if (student.status === 'Waiting') {
                     hasWaiting = true;
                     const isVip = !/^[A-Za-z]{3}\d{6}$/.test(student.mssv); 
-                    const badge = isVip ? `<span class="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-black uppercase ml-2">VIP</span>` : '';
+                    const badge = isVip ? `<span class="bg-[#b026ff]/20 border border-[#b026ff]/50 text-[#b026ff] text-[9px] px-2 py-0.5 rounded-full font-black uppercase ml-2 shadow-[0_0_8px_#b026ff]">VIP</span>` : '';
                     
                     const isSelected = selectedWaitItems.has(student.mssv);
-                    const cardBg = isSelected ? 'bg-blue-50 border-blue-400 shadow-md ring-1 ring-blue-400' : 'bg-white border-gray-100 shadow-sm hover:bg-gray-50';
+                    const cardBg = isSelected ? 'bg-blue-900/40 border-[#0093d0] shadow-[0_0_15px_rgba(0,147,208,0.3)] ring-1 ring-[#0093d0]' : 'bg-white/5 border-white/10 shadow-sm hover:bg-white/10 hover:shadow-[0_4px_15px_rgba(0,147,208,0.15)]';
 
                     waitingContainer.innerHTML += `
-                        <div onclick="handleWaitCardClick(event, '${student.mssv}')" oncontextmenu="handleWaitContextMenu(event, '${student.mssv}')" class="flex justify-between items-center ${cardBg} p-3 rounded-xl gap-2 cursor-pointer select-none transition-colors">
+                        <div onclick="handleWaitCardClick(event, '${student.mssv}')" oncontextmenu="handleWaitContextMenu(event, '${student.mssv}')" class="flex justify-between items-center ${cardBg} p-3.5 rounded-2xl gap-2 cursor-pointer select-none transition-all backdrop-blur-sm group">
                             <div class="flex-1 overflow-hidden pr-2">
-                                <p class="text-sm font-bold text-gray-800 truncate">${student.name} ${badge}</p>
-                                <p class="text-xs font-bold text-blue-600 truncate">${student.mssv} <span class="text-gray-400 font-normal ml-1">| Pass: ${student.password}</span></p>
+                                <p class="text-[11px] font-black text-gray-200 uppercase tracking-widest truncate">${student.name} ${badge}</p>
+                                <p class="text-[10px] font-bold text-[#0093d0] uppercase tracking-widest mt-1 truncate">${student.mssv} <span class="text-gray-500 font-medium ml-1.5 lowercase">| pass: ${student.password}</span></p>
                             </div>
-                            <button onclick="event.stopPropagation(); updateStatus('${student.mssv}', 'Active')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm active:scale-95 transition-transform text-sm whitespace-nowrap relative z-20">VÀO CHỤP</button>
+                            <button onclick="event.stopPropagation(); updateStatus('${student.mssv}', 'Active')" class="bg-white/10 hover:bg-[#0093d0] text-gray-300 hover:text-white font-bold py-2.5 px-4 rounded-xl border border-white/10 hover:border-[#0093d0] shadow-sm active:scale-95 transition-all text-[10px] uppercase tracking-widest whitespace-nowrap relative z-20">VÀO CHỤP</button>
                             <div class="relative flex-shrink-0 z-20">
-                                <button onclick="openWaitThreeDotMenu(event, '${student.mssv}')" class="text-gray-400 hover:text-gray-800 transition-colors p-2 rounded-md hover:bg-gray-200 shadow-sm border border-transparent">
+                                <button onclick="openWaitThreeDotMenu(event, '${student.mssv}')" class="text-gray-500 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/10 shadow-sm border border-transparent">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
                                 </button>
                             </div>
@@ -417,22 +507,28 @@
             list.forEach(item => {
                 const mssv = item.mssv;
                 const isVip = !/^[A-Za-z]{3}\d{6}$/.test(mssv);
-                const color = isVip ? 'text-purple-500' : 'text-blue-500';
+                const color = isVip ? 'text-[#b026ff]' : 'text-[#0093d0]';
                 
-                const nameHtml = (isVip || item.name === 'Khách VIP') ? `<div class="mb-3 h-[15px]"></div>` : `<span class="text-[10px] text-gray-400 font-medium truncate w-full text-center px-2 mb-3" title="${item.name}">${item.name}</span>`;
-                const cardBg = selectedItems.has(mssv) ? 'bg-blue-50 border-blue-400 shadow-md ring-1 ring-blue-400' : 'bg-white border-gray-100 shadow-sm hover:bg-gray-50';
+                // Ảo thuật hiển thị cho thư mục mẫu
+                let displayMssv = mssv;
+                if (isVip && item.name === 'Thầy Minh') {
+                    displayMssv = "[SRC] CLB SINH VIÊN NCKH";
+                }
+                
+                const nameHtml = (isVip || item.name === 'Khách VIP') ? `<div class="mb-3 h-[15px]"></div>` : `<span class="text-[9px] text-gray-400 font-medium truncate w-full text-center px-1 mb-2.5 uppercase tracking-widest" title="${item.name}">${item.name}</span>`;
+                const cardBg = selectedItems.has(mssv) ? 'bg-blue-900/40 border-[#0093d0] shadow-[0_0_15px_rgba(0,147,208,0.3)] ring-1 ring-[#0093d0]' : 'bg-white/5 border-white/10 shadow-sm hover:bg-white/10 hover:-translate-y-1.5 hover:shadow-[0_10px_25px_rgba(0,147,208,0.15)]';
 
                 grid.innerHTML += `
-                    <div onclick="handleCardClick(event, '${mssv}')" oncontextmenu="handleContextMenu(event, '${mssv}')" class="${cardBg} p-3 rounded-xl border flex flex-col items-center justify-between h-full relative cursor-pointer select-none transition-colors">
-                        <div class="absolute top-2 right-2 z-20">
-                            <button onclick="openThreeDotMenu(event, '${mssv}')" class="text-gray-400 hover:text-gray-800 transition-colors p-1.5 rounded-md hover:bg-gray-200 shadow-sm border border-transparent">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+                    <div onclick="handleCardClick(event, '${mssv}')" oncontextmenu="handleContextMenu(event, '${mssv}')" class="${cardBg} p-3.5 rounded-2xl border flex flex-col items-center justify-between h-[150px] relative cursor-pointer select-none transition-all duration-300 backdrop-blur-sm group overflow-hidden">
+                        <div class="absolute top-1.5 right-1.5 z-20">
+                            <button onclick="openThreeDotMenu(event, '${mssv}')" class="text-gray-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shadow-sm border border-transparent">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
                             </button>
                         </div>
-                        <svg class="w-10 h-10 ${color} mb-1 opacity-80 mt-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
-                        <span class="font-bold text-gray-700 tracking-wide text-sm truncate w-full text-center px-2 mt-1" title="${mssv}">${mssv}</span>
+                        <svg class="w-9 h-9 ${color} mb-1 opacity-90 mt-1 group-hover:scale-110 transition-transform duration-300 drop-shadow-md" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                        <span class="font-black text-white tracking-wider text-[11px] truncate w-full text-center px-1 mt-1" title="${mssv}">${displayMssv}</span>
                         ${nameHtml}
-                        <button onclick="event.stopPropagation(); updateStatus('${mssv}', 'Active')" class="w-full bg-gray-100 hover:bg-blue-200 text-blue-600 font-bold py-2 rounded-lg text-xs transition-colors border border-gray-200 z-20 relative">
+                        <button onclick="event.stopPropagation(); updateStatus('${mssv}', 'Active')" class="w-full bg-white/10 hover:bg-[#0093d0] text-gray-300 hover:text-white font-bold py-2 rounded-xl text-[9px] uppercase tracking-widest transition-colors border border-white/10 hover:border-[#0093d0] z-20 relative active:scale-95">
                             Chụp bổ sung
                         </button>
                     </div>
@@ -803,8 +899,154 @@
             btn.disabled = false; btn.innerHTML = "TẠO NHANH & XẾP HÀNG";
         });
 
+        // ==========================================
+        // VẼ HIỆU ỨNG VŨ TRỤ & PLEXUS ĐA SẮC
+        // ==========================================
+        function initSpace() {
+            nebulae = [];
+            tinyStars = [];
+            largeStars = [];
+
+            const nebulaeData = [
+                { c1: 'rgba(75, 0, 130, 0.15)', c2: 'rgba(75, 0, 130, 0)' },
+                { c1: 'rgba(0, 147, 208, 0.1)', c2: 'rgba(0, 147, 208, 0)' },
+                { c1: 'rgba(138, 43, 226, 0.1)', c2: 'rgba(138, 43, 226, 0)' }
+            ];
+            for(let i = 0; i < 6; i++) {
+                let nType = nebulaeData[Math.floor(Math.random() * nebulaeData.length)];
+                nebulae.push({ x: Math.random() * width, y: Math.random() * height, radius: Math.random() * 250 + 150, c1: nType.c1, c2: nType.c2 });
+            }
+
+            const tinyCount = window.innerWidth < 768 ? 800 : 2500;
+            for(let i = 0; i < tinyCount; i++) {
+                let posX = Math.random() < 0.5 ? (width / 2) + (Math.random() - 0.5) * 500 : Math.random() * width;
+                let posY = Math.random() < 0.5 ? (height / 2) + (Math.random() - 0.5) * 900 : Math.random() * height;
+                tinyStars.push({ x: posX, y: posY, radius: Math.random() * 1.5, alpha: Math.random() * Math.PI * 2, speed: Math.random() * 0.03 + 0.01 });
+            }
+
+            const starCount = window.innerWidth < 768 ? 30 : 70; 
+            let attempts = 0;
+            while (largeStars.length < starCount && attempts < 1000) {
+                let posX = Math.random() < 0.6 ? (width / 2) + (Math.random() - 0.5) * 550 : Math.random() * width;
+                let posY = Math.random() < 0.6 ? (height / 2) + (Math.random() - 0.5) * 850 : Math.random() * height;
+                let starSize = Math.random() * (30 - 15) + 15;
+                let isOverlapping = false;
+                for (let j = 0; j < largeStars.length; j++) {
+                    let existingStar = largeStars[j];
+                    let distance = Math.sqrt(Math.pow(posX - existingStar.x, 2) + Math.pow(posY - existingStar.y, 2));
+                    if (distance < (starSize + existingStar.size + 10)) { isOverlapping = true; break; }
+                }
+                if (!isOverlapping) largeStars.push({ x: posX, y: posY, size: starSize, baseAlpha: Math.random() * 0.5 + 0.2, currentAlpha: 0, glowTarget: 0 });
+                attempts++;
+            }
+        }
+
+        function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; initSpace(); }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width; this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1; this.vy = (Math.random() - 0.5) * 1;
+                this.radius = Math.random() * 1.5 + 0.5;
+                this.isPurple = Math.random() > 0.6; 
+                this.color = this.isPurple ? 'rgba(176, 38, 255, 0.8)' : 'rgba(0, 147, 208, 0.9)';
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > height) this.vy = -this.vy;
+                if (Math.abs(this.vx) > 1) this.vx *= 0.95; if (Math.abs(this.vy) > 1) this.vy *= 0.95;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.isActive = true; });
+        window.addEventListener('mouseout', () => { mouse.isActive = false; });
+        window.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; mouse.isActive = true; });
+        window.addEventListener('touchend', () => { mouse.isActive = false; });
+
+        function triggerRipple(x, y) {
+            ripples.push({ x: x, y: y, radius: 0, maxRadius: 300, alpha: 0.8 });
+            particles.forEach(p => {
+                let dx = p.x - x; let dy = p.y - y; let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 200) {
+                    let force = (200 - distance) / 200; let angle = Math.atan2(dy, dx);
+                    p.vx += Math.cos(angle) * force * 15; p.vy += Math.sin(angle) * force * 15;
+                }
+            });
+        }
+        window.addEventListener('click', (e) => triggerRipple(e.clientX, e.clientY));
+        window.addEventListener('touchstart', (e) => triggerRipple(e.touches[0].clientX, e.touches[0].clientY));
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            nebulae.forEach(n => {
+                let g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
+                g.addColorStop(0, n.c1); g.addColorStop(1, n.c2);
+                ctx.beginPath(); ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+            });
+
+            tinyStars.forEach(s => {
+                s.alpha += s.speed; let currentAlpha = Math.abs(Math.sin(s.alpha)) * 0.8;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`; ctx.fill();
+            });
+
+            largeStars.forEach(s => {
+                let dist = mouse.isActive ? Math.sqrt(Math.pow(mouse.x - s.x, 2) + Math.pow(mouse.y - s.y, 2)) : 9999;
+                s.glowTarget = dist < 150 ? s.baseAlpha + (1 - dist / 150) * (1 - s.baseAlpha) : s.baseAlpha;
+                s.currentAlpha += (s.glowTarget - s.currentAlpha) * 0.1;
+
+                ctx.save(); ctx.translate(s.x, s.y);
+                ctx.beginPath(); ctx.moveTo(0, -s.size); ctx.quadraticCurveTo(0, 0, s.size, 0); ctx.quadraticCurveTo(0, 0, 0, s.size); ctx.quadraticCurveTo(0, 0, -s.size, 0); ctx.quadraticCurveTo(0, 0, 0, -s.size);
+                ctx.fillStyle = `rgba(255, 220, 100, ${s.currentAlpha})`; ctx.fill();
+
+                let g = ctx.createRadialGradient(0, 0, 0, 0, 0, s.size * 1.5);
+                g.addColorStop(0, `rgba(255, 220, 100, ${s.currentAlpha * 0.5})`); g.addColorStop(1, 'rgba(255, 220, 100, 0)');
+                ctx.beginPath(); ctx.arc(0, 0, s.size * 1.5, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+                ctx.restore();
+            });
+
+            particles.forEach(p => { p.update(); p.draw(); });
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2));
+                    if (distance < connectionDistance) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = (particles[i].isPurple || particles[j].isPurple) ? `rgba(138, 92, 232, ${(1 - distance / connectionDistance) * 0.6})` : `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`;
+                        ctx.lineWidth = 0.5; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+                    }
+                }
+                if (mouse.isActive) {
+                    let distMouse = Math.sqrt(Math.pow(particles[i].x - mouse.x, 2) + Math.pow(particles[i].y - mouse.y, 2));
+                    if (distMouse < mouseConnectionDistance) {
+                        ctx.beginPath(); ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
+                        ctx.lineWidth = 1.2; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                    }
+                }
+            }
+
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                let r = ripples[i];
+                ctx.beginPath(); ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2); ctx.strokeStyle = `rgba(0, 147, 208, ${r.alpha})`; ctx.lineWidth = 2; ctx.stroke();
+                r.radius += 8; r.alpha -= 0.02;
+                if (r.alpha <= 0) ripples.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+        // ==========================================
+
         fetchAllData();
         setInterval(() => fetchAllData(true), 10000); 
     </script>
+    </div>
 </body>
 </html>
