@@ -156,11 +156,6 @@
             <!-- Hiệu ứng ánh sáng nền góc -->
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
-            <!-- Nút đóng góc phải -->
-            <button onclick="closeSpotifyModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 rounded-full p-1.5 transition-colors z-10 active:scale-90">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-
             <!-- Ảnh cover nguyên bản -->
             <div class="w-full aspect-square bg-black/50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden mb-5 mt-4 relative z-10 border border-white/5">
                 <img src="png/dia-nhac.png" alt="Cover" class="w-full h-full object-cover pointer-events-none">
@@ -328,7 +323,7 @@
             </div>
 
             <!-- Modal Xác Nhận Kép -->
-            <div id="confirmModal" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex items-center justify-center p-4 fade-in">
+            <div id="confirmModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in overflow-hidden">
                 <div class="glass-panel rounded-3xl p-6 w-full max-w-sm text-center relative overflow-hidden pointer-events-auto">
                     <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#0093d0] rounded-full blur-3xl opacity-30"></div>
                     <div class="w-16 h-16 bg-[#0093d0]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#0093d0]/50">
@@ -487,10 +482,12 @@
             document.getElementById('confirmName').textContent = name;
             document.getElementById('confirmMSSV').textContent = mssv;
             document.getElementById('confirmModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Khóa cuộn trang nền
         }
 
         function closeConfirmModal() {
             document.getElementById('confirmModal').classList.add('hidden');
+            document.body.style.overflow = ''; // Mở lại cuộn trang nền
         }
 
         async function submitRegistration() {
@@ -515,7 +512,8 @@
                     document.getElementById('successCardName').textContent = name;
                     document.getElementById('successCardMSSV').textContent = mssv;
                     document.getElementById('successOverlay').classList.remove('hidden');
-                    
+                    document.body.style.overflow = '';
+
                     // Khóa cuộn Tab 1 trên điện thoại
                     document.getElementById('tab1').classList.remove('overflow-y-auto');
                     document.getElementById('tab1').classList.add('overflow-hidden');
