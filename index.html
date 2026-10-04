@@ -416,6 +416,33 @@
         let currentTargetFolder = "";
         let completedList = []; 
 
+        // ==========================================
+        // AUTO-ZOOM PANEL: TỰ ĐỘNG THU NHỎ TRÊN LAPTOP MÀN HÌNH THẤP
+        // ==========================================
+        function autoScalePanel() {
+            const panel = document.querySelector('.glass-panel');
+            // Chỉ can thiệp thu nhỏ trên giao diện Máy tính/Laptop
+            if (window.innerWidth >= 768) {
+                const idealHeight = 880; // Chiều cao Panel (850) + một chút lề cho đẹp (30)
+                const currentHeight = window.innerHeight;
+
+                // Nếu chiều cao màn hình thực tế thấp hơn mức lý tưởng
+                if (currentHeight < idealHeight) {
+                    // Tính ra phần trăm thu nhỏ (giống hệt nguyên lý Ctrl -)
+                    const scaleRatio = currentHeight / idealHeight;
+                    panel.style.zoom = scaleRatio; 
+                } else {
+                    panel.style.zoom = 1; // Màn hình to (như PC MSI) thì giữ nguyên 100%
+                }
+            } else {
+                panel.style.zoom = 1; // Điện thoại thì luôn giữ nguyên để vuốt tự nhiên
+            }
+        }
+
+        // Kích hoạt ngay khi mở web và tự động chạy lại nếu người dùng chỉnh cỡ cửa sổ
+        window.addEventListener('resize', autoScalePanel);
+        autoScalePanel();
+
         function switchTab(tabId) {
             localStorage.setItem('student_current_tab', tabId);
             document.getElementById('tab1').classList.add('hidden');
