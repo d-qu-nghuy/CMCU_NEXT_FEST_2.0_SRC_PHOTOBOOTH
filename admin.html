@@ -229,6 +229,34 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbz_m-F4cTM-vvyyaUs9Yf0QNoPxpuAFZtNbUQyYEy-GsxfgngyJHb3Lf-m-OlggkC1b/exec";
+
+        // ==========================================
+        // AUTO-ZOOM PANEL: TỰ ĐỘNG THU NHỎ TRÊN LAPTOP MÀN HÌNH THẤP
+        // ==========================================
+        function autoScalePanel() {
+            const mainPanel = document.querySelector('.glass-panel');
+
+            // Chỉ can thiệp thu nhỏ trên giao diện Máy tính/Laptop
+            if (window.innerWidth >= 768) {
+                const idealHeight = 880; // Chiều cao chuẩn
+                const currentHeight = window.innerHeight;
+
+                // Nếu màn hình thực tế thấp hơn mức lý tưởng (bị Windows bóp tỷ lệ)
+                if (currentHeight < idealHeight) {
+                    const scaleRatio = currentHeight / idealHeight;
+                    if (mainPanel) mainPanel.style.zoom = scaleRatio; 
+                } else {
+                    if (mainPanel) mainPanel.style.zoom = 1; 
+                }
+            } else {
+                // Trên điện thoại luôn giữ nguyên 100% để đảm bảo vùng chạm vuốt
+                if (mainPanel) mainPanel.style.zoom = 1; 
+            }
+        }
+
+        // Kích hoạt ngay khi mở web và tự động chạy lại nếu người dùng chỉnh cỡ cửa sổ
+        window.addEventListener('resize', autoScalePanel);
+        autoScalePanel();
         
         // ==========================================
         // KHỞI TẠO BIẾN CANVAS VŨ TRỤ
