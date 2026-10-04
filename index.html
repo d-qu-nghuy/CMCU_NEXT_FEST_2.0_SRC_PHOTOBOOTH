@@ -417,25 +417,31 @@
         let completedList = []; 
 
         // ==========================================
-        // AUTO-ZOOM PANEL: TỰ ĐỘNG THU NHỎ TRÊN LAPTOP MÀN HÌNH THẤP
+        // AUTO-ZOOM: TỰ ĐỘNG THU NHỎ TRÊN LAPTOP MÀN HÌNH THẤP
         // ==========================================
         function autoScalePanel() {
-            const panel = document.querySelector('.glass-panel');
+            const mainPanel = document.querySelector('.glass-panel');
+            // Trỏ thẳng vào khối giao diện Kính mờ bên trong Spotify Modal
+            const spotifyPanel = document.querySelector('#spotifyModal > div'); 
+
             // Chỉ can thiệp thu nhỏ trên giao diện Máy tính/Laptop
             if (window.innerWidth >= 768) {
-                const idealHeight = 880; // Chiều cao Panel (850) + một chút lề cho đẹp (30)
+                const idealHeight = 880; // Chiều cao chuẩn
                 const currentHeight = window.innerHeight;
 
-                // Nếu chiều cao màn hình thực tế thấp hơn mức lý tưởng
+                // Nếu màn hình thực tế thấp hơn mức lý tưởng (bị Windows bóp tỷ lệ)
                 if (currentHeight < idealHeight) {
-                    // Tính ra phần trăm thu nhỏ (giống hệt nguyên lý Ctrl -)
                     const scaleRatio = currentHeight / idealHeight;
-                    panel.style.zoom = scaleRatio; 
+                    if (mainPanel) mainPanel.style.zoom = scaleRatio; 
+                    if (spotifyPanel) spotifyPanel.style.zoom = scaleRatio; // Ép Spotify thu nhỏ đồng bộ
                 } else {
-                    panel.style.zoom = 1; // Màn hình to (như PC MSI) thì giữ nguyên 100%
+                    if (mainPanel) mainPanel.style.zoom = 1; 
+                    if (spotifyPanel) spotifyPanel.style.zoom = 1; 
                 }
             } else {
-                panel.style.zoom = 1; // Điện thoại thì luôn giữ nguyên để vuốt tự nhiên
+                // Trên điện thoại luôn giữ nguyên 100% để đảm bảo vùng chạm vuốt
+                if (mainPanel) mainPanel.style.zoom = 1; 
+                if (spotifyPanel) spotifyPanel.style.zoom = 1; 
             }
         }
 
