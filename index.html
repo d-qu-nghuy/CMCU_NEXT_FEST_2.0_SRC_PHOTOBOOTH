@@ -991,10 +991,14 @@
         let width, height;
         let particles = [];
         
-        // Biến nhận diện thiết bị di động chuẩn xác (bất chấp xoay ngang dọc)
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || Math.min(window.innerWidth, window.innerHeight) < 768;
+        // Nhận diện Mobile chuẩn (Bỏ xét chiều cao để không nhận nhầm Laptop bị Windows Scaling)
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
         
-        const particleCount = isMobileDevice ? 60 : 280;
+        // Tính tỷ lệ diện tích so với chuẩn màn hình MSI (1920x1080 = 2,073,600 pixel)
+        const scaleRatio = (window.innerWidth * window.innerHeight) / 2073600;
+
+        // Số hạt Plexus tỷ lệ thuận với màn hình (Max 400, Min 100 trên PC)
+        const particleCount = isMobileDevice ? 30 : Math.floor(Math.max(100, Math.min(280 * scaleRatio, 400)));
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -1029,7 +1033,8 @@
             }
 
             // 2. Chấm sao nhỏ li ti (Tiny Stars) - Đã tăng mạnh số lượng sao
-            const tinyCount = isMobileDevice ? 400 : 2500;
+            // Sao nhí tỷ lệ theo diện tích (Max 3500, Min 800 trên PC)
+            const tinyCount = isMobileDevice ? 400 : Math.floor(Math.max(800, Math.min(2500 * scaleRatio, 3500)));
             for(let i = 0; i < tinyCount; i++) {
                 let posX, posY;
                 if (Math.random() < 0.5) {
@@ -1050,7 +1055,8 @@
             }
 
             // 3. Ngôi sao lớn cố định CÓ CHỐNG CHỒNG CHÉO
-            const starCount = isMobileDevice ? 20 : 70;
+            // Sao lớn tỷ lệ theo diện tích (Max 100, Min 30 trên PC)
+            const starCount = isMobileDevice ? 20 : Math.floor(Math.max(30, Math.min(70 * scaleRatio, 100)));
             let attempts = 0; // Giới hạn số lần thử tìm vị trí để tránh treo trình duyệt
             
             while (largeStars.length < starCount && attempts < 1000) {

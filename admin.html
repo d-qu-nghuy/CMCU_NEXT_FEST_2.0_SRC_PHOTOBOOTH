@@ -68,7 +68,7 @@
         .tab-inactive:hover { color: rgba(255, 255, 255, 0.8); }
 
         /* KHÓA UX DI ĐỘNG */
-        body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+        html, body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
         input, textarea { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
         button, a, div[onclick] { -webkit-tap-highlight-color: transparent; outline: none; touch-action: manipulation; }
 
@@ -185,7 +185,7 @@
     </div>
 
     <!-- Modal Thêm Nhanh (Dùng chung cho cả Sinh viên và VIP) -->
-    <div id="quickAddModal" onclick="closeQuickAddModal()" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 fade-in cursor-pointer">
+    <div id="quickAddModal" onclick="closeQuickAddModal()" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 fade-in cursor-pointer overflow-hidden touch-none">
         <div onclick="event.stopPropagation()" class="glass-panel rounded-3xl p-6 w-full max-w-sm relative cursor-default border border-white/20 pointer-events-auto overflow-hidden">
             <div class="absolute -top-10 -left-10 w-32 h-32 bg-[#b026ff] rounded-full blur-3xl opacity-20" id="quickAddGlow"></div>
             
@@ -238,7 +238,15 @@
         let width, height;
         let particles = [];
         
-        const particleCount = window.innerWidth < 768 ? 120 : 280;
+        // Nhận diện Mobile chuẩn (Bỏ xét chiều cao để không nhận nhầm Laptop bị Windows Scaling)
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        
+        // Tính tỷ lệ diện tích so với chuẩn màn hình MSI (1920x1080 = 2,073,600 pixel)
+        const scaleRatio = (window.innerWidth * window.innerHeight) / 2073600;
+
+        // Số hạt Plexus tỷ lệ thuận với màn hình (Max 400, Min 100 trên PC)
+        const particleCount = isMobileDevice ? 30 : Math.floor(Math.max(100, Math.min(280 * scaleRatio, 400)));
+        
         const connectionDistance = 130; 
         const mouseConnectionDistance = 200;
         
@@ -928,14 +936,16 @@
                 nebulae.push({ x: Math.random() * width, y: Math.random() * height, radius: Math.random() * 250 + 150, c1: nType.c1, c2: nType.c2 });
             }
 
-            const tinyCount = window.innerWidth < 768 ? 800 : 2500;
+            // Sao nhí tỷ lệ theo diện tích (Max 3500, Min 800 trên PC)
+            const tinyCount = isMobileDevice ? 400 : Math.floor(Math.max(800, Math.min(2500 * scaleRatio, 3500)));
             for(let i = 0; i < tinyCount; i++) {
                 let posX = Math.random() < 0.5 ? (width / 2) + (Math.random() - 0.5) * 500 : Math.random() * width;
                 let posY = Math.random() < 0.5 ? (height / 2) + (Math.random() - 0.5) * 900 : Math.random() * height;
                 tinyStars.push({ x: posX, y: posY, radius: Math.random() * 1.5, alpha: Math.random() * Math.PI * 2, speed: Math.random() * 0.03 + 0.01 });
             }
 
-            const starCount = window.innerWidth < 768 ? 30 : 70; 
+            // Sao lớn tỷ lệ theo diện tích (Max 100, Min 30 trên PC)
+            const starCount = isMobileDevice ? 20 : Math.floor(Math.max(30, Math.min(70 * scaleRatio, 100)));
             let attempts = 0;
             while (largeStars.length < starCount && attempts < 1000) {
                 let posX = Math.random() < 0.6 ? (width / 2) + (Math.random() - 0.5) * 550 : Math.random() * width;
@@ -1026,20 +1036,23 @@
 
             particles.forEach(p => { p.update(); p.draw(); });
 
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2));
-                    if (distance < connectionDistance) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = (particles[i].isPurple || particles[j].isPurple) ? `rgba(138, 92, 232, ${(1 - distance / connectionDistance) * 0.6})` : `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`;
-                        ctx.lineWidth = 0.5; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+            // THUẬT TOÁN CHỐNG LAG: Chỉ tính toán và vẽ dây nối (Plexus) trên Máy tính
+            if (!isMobileDevice) {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        let distance = Math.sqrt(Math.pow(particles[i].x - particles[j].x, 2) + Math.pow(particles[i].y - particles[j].y, 2));
+                        if (distance < connectionDistance) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = (particles[i].isPurple || particles[j].isPurple) ? `rgba(138, 92, 232, ${(1 - distance / connectionDistance) * 0.6})` : `rgba(0, 147, 208, ${(1 - distance / connectionDistance) * 0.7})`;
+                            ctx.lineWidth = 0.5; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+                        }
                     }
-                }
-                if (mouse.isActive) {
-                    let distMouse = Math.sqrt(Math.pow(particles[i].x - mouse.x, 2) + Math.pow(particles[i].y - mouse.y, 2));
-                    if (distMouse < mouseConnectionDistance) {
-                        ctx.beginPath(); ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
-                        ctx.lineWidth = 1.2; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                    if (mouse.isActive) {
+                        let distMouse = Math.sqrt(Math.pow(particles[i].x - mouse.x, 2) + Math.pow(particles[i].y - mouse.y, 2));
+                        if (distMouse < mouseConnectionDistance) {
+                            ctx.beginPath(); ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 - distMouse / mouseConnectionDistance})`;
+                            ctx.lineWidth = 1.2; ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                        }
                     }
                 }
             }
@@ -1054,6 +1067,36 @@
         }
         animate();
         // ==========================================
+
+        // ==========================================
+        // KHÓA TRIỆT ĐỂ ZOOM VÀ PINCH-TO-ZOOM TRÊN MOBILE
+        // ==========================================
+        let lastTouchTime = 0;
+        
+        // 1. Chống zoom bằng 2 ngón tay
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) { event.preventDefault(); }
+        }, { passive: false });
+
+        // 2. Chống nhấp đúp để zoom
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchTime <= 300) {
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+                    event.preventDefault();
+                }
+            }
+            lastTouchTime = now;
+        }, { passive: false });
+
+        // 3. Khóa hành vi "Rubber-banding" (Kéo dãn lòi viền nền) trên iOS
+        document.addEventListener('touchmove', function(e) {
+            const openModals = document.querySelectorAll('.fixed.z-\\[100\\]:not(.hidden)');
+            if (openModals.length > 0) {
+                const isScrollableContent = e.target.closest('.overflow-y-auto');
+                if (!isScrollableContent) { e.preventDefault(); }
+            }
+        }, { passive: false });
 
         fetchAllData();
         setInterval(() => fetchAllData(true), 10000); 
